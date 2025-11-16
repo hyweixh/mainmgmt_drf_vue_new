@@ -1,0 +1,74 @@
+
+
+.container.light {
+  background-color: var(--light-background-gm);
+}
+
+.header.light{
+  background-color: #fff;
+  border-bottom: 1px solid var(--light-underline);
+}
+/* 标签页 */
+.global-tabs-header.light{
+  background-color: #fff;
+  border-bottom: 1px solid var(--light-underline);
+}
+.tabs-div-button.light{
+  border-left: 1px solid var(--light-underline);
+  border-right: 1px solid var(--light-underline);
+}
+.tabs-div-button.light:hover{
+  background-color: var(--el-color-primary-light-9);
+}
+
+/* 个人中心列表虚线 */
+.list-group-item.light{
+  border-bottom: 1px solid var(--light-underline);
+  border-top: 1px solid var(--light-underline);
+}
+
+/* 面包屑 */
+.router-link-active.light {
+  color: #000;
+  font-weight: bold;
+}
+
+/* 表格按钮容器 */
+.table-container.light {
+  background-color: #fff;
+}
+
+/* 自签证书抽屉下划线 */
+.drawer-header-container.light {
+  border-bottom: 1px solid var(--light-underline);
+}
+
+/* layout插件 */
+.layout-card.light,.layout-card-fixed.light{
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.layout-card.light:hover {
+  box-shadow: 0 2px 16px rgba(53, 53, 53, 0.35);
+  /* 鼠标悬停时的阴影 */
+}
+
+/* 数据同步步骤项 */
+.data-item.light {
+  background-color: #f4f7fc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.data-item.light:hover {
+  background-color: #e7ecf9; /* 悬停时变浅的背景色 */
+  transform: translateY(-3px); /* 向上浮动 */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* 增加阴影，提升浮动效果 */
+}
+
+.operation-mini-icon.light:hover{
+  background-color: var(--el-color-primary-light-9);
+}
+
+.divCard.light,.divCard-openrtion-button.light,.divCard-websitecard.light{
+  background-color: var(--light-background-card);
+}

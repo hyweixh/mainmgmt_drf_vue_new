@@ -1,0 +1,13 @@
+登陆：
+post:http://127.0.0.1:8000/api/auth/login
+username,password
+获取子网类型
+get:http://127.0.0.1:8000/api/devicemgmt/subnet-types/
+获取设备类型：
+get:http://127.0.0.1:8000/api/devicemgmt/device-types/
+获取设备信息
+get:http://127.0.0.1:8000/api/devicemgmt/devices
+添加设备信息：
+post:http://127.0.0.1:8000/api/devicemgmt/devices
+编辑设备信息：
+patch:http://127.0.0.1:8000/api/devicemgmt/devices/8

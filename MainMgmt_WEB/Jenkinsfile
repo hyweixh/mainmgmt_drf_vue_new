@@ -1,0 +1,126 @@
+pipeline {
+  agent any  // 表示使用任意可用的代理节点
+  environment {
+    git_auth = "f5f69428-3971-4699-932f-7a58e8a57db8"  // git的凭证
+      url = "http://10.8.0.56/root/opsadmin_front.git"  // 远程地址
+      remote_directory = "/html/dist"  // 远程目录
+      SERVER_CONFIG_NAME = "10.8.0.57"  // 远程服务器
+      WEBHOOK_URL = "http://10.8.0.57:8000/api/jenkins/webhook"    //webhook
+  }
+
+  stages {
+    stage('GitPull') {
+      steps {
+        checkout([$class: 'GitSCM',
+          branches: [[name: '*/master']],  // 分支名称
+        doGenerateSubmoduleConfigurations: false,
+                  extensions: [
+                    [$class: 'WipeWorkspace'],       // 彻底擦除旧工作目录
+                    [$class: 'CleanBeforeCheckout']  // pull 前再清一次
+                  ],
+          submoduleCfg: [],
+          userRemoteConfigs: [[
+        credentialsId: "${git_auth}",
+          url: "${url}"
+        ]]])
+      }
+    }
+
+    stage('Build') {
+      steps {
+        // 使用 NodeJS 的 npm 进行打包
+        script {
+          nodejs('NodeJS') {
+            sh '''
+            npm config set registry https://registry.npmmirror.com
+            npm install
+            npm run build
+            '''
+          }
+        }
+      }
+    }
+
+    stage('远程部署') {
+      steps {
+        // 远程调用进行项目部署
+        sshPublisher(publishers: [sshPublisherDesc(
+        configName: "${SERVER_CONFIG_NAME}",
+          transfers: [sshTransfer(
+        cleanRemote: false,
+          excludes: '',
+          execCommand: '',
+          execTimeout: 120000,
+          flatten: false,
+          makeEmptyDirs: false,
+          noDefaultExcludes: false,
+          patternSeparator: '[, ]+',
+          remoteDirectory: "${remote_directory}",
+          remoteDirectorySDF: false,
+          removePrefix: 'dist',
+          sourceFiles: 'dist/**'
+        )],
+          usePromotionTimestamp: false,
+          useWorkspaceInPromotion: false,
+          verbose: false
+        )])
+      }
+    }
+  }
+
+    post {
+        always {
+            script {
+                // 计算构建时间
+                long startMillis = currentBuild.startTimeInMillis
+                long endMillis = System.currentTimeMillis()
+                long span = endMillis - startMillis
+                int mins = (int)(span / 60000)
+                int secs = (int)((span % 60000) / 1000)
+                String duration = "${mins}分${secs}秒"
+                
+                // 格式化时间
+                def fmt = new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss')
+                fmt.setTimeZone(TimeZone.getTimeZone('Asia/Shanghai'))
+                String startTime = fmt.format(new Date(startMillis))
+                String endTime = fmt.format(new Date(endMillis))
+                
+                // 获取构建状态
+                def status = currentBuild.currentResult ?: 'SUCCESS'
+                
+                // 构造发送到Django的数据
+                def webhookData = [
+                    type: 'Jenkins',
+                    job_name: env.JOB_NAME,
+                    build_number: env.BUILD_NUMBER,
+                    status: status,
+                    start_time: startTime,
+                    end_time: endTime,
+                    duration: duration,
+                ]
+                
+                // 转换为JSON
+                def payload = groovy.json.JsonOutput.toJson(webhookData)
+                
+                // 发送到Django webhook
+                try {
+                    def response = sh(
+                        script: """
+                            curl -s -w "HTTPSTATUS:%{http_code}" \
+                                -H 'Content-Type: application/json' \
+                                -X POST \
+                                -d '${payload}' \
+                                '${WEBHOOK_URL}'
+                        """,
+                        returnStdout: true
+                    )
+                    def httpStatus = response.tokenize("HTTPSTATUS:")[1]
+                    def responseBody = response.tokenize("HTTPSTATUS:")[0]
+                    echo "${responseBody} ${httpStatus}"
+                } catch (Exception e) {
+                    echo "发送webhook时发生错误: ${e.message}"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,32 @@
+[
+  { "name": "Vue.js", "value": 9 },
+  { "name": "Vue Router", "value": 9 },
+  { "name": "Pinia", "value": 9 },
+  { "name": "Axios", "value": 9 },
+  { "name": "Vite", "value": 9 },
+  { "name": "ECharts", "value": 9 },
+  { "name": "Element Plus", "value": 7 },
+  { "name": "Ant Design Vue", "value": 7 },
+  { "name": "vue-grid-layout-v3", "value": 7 },
+  { "name": "WordCloud", "value": 6 },
+  { "name": "Vxe Table", "value": 6 },
+  { "name": "SSE", "value": 6 },
+  { "name": "Animate.css", "value": 5 },
+  { "name": "highlight.js", "value": 5 },
+  { "name": "Clipboard.js", "value": 5 },
+  { "name": "@antv/g2plot", "value": 5 },
+  { "name": "nprogress", "value": 5 },
+  { "name": "animate.css", "value": 5 },
+  { "name": "接口进度条", "value": 4 },
+  { "name": "自定义SvgIcon", "value": 4 },
+  { "name": "词云图", "value": 4 },
+  { "name": "按钮权限控制", "value": 4 },
+  { "name": "饼图", "value": 4 },
+  { "name": "柱状图", "value": 4 },
+  { "name": "eslint", "value": 4 },
+  { "name": "面包屑", "value": 4 },
+  { "name": "面包屑动画", "value": 4 }
+
+
+
+]

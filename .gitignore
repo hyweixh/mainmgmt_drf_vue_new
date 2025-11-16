@@ -1,0 +1,40 @@
+# ===== Python / Django =====
+# Python 虚拟环境
+.venv/
+
+# 日志文件
+*.log
+
+# Celery 调度文件
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir
+
+# IDE 配置（PyCharm）
+.idea/
+
+# 本地环境变量
+.env
+
+# 本地状态文件
+last_position.txt
+
+# 用户上传文件
+media/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# Django
+db.sqlite3
+staticfiles/
+
+# ===== Node / Vue =====
+node_modules/
+dist/
+*.local
+.env.local
+.env.*.local
+.vscode/

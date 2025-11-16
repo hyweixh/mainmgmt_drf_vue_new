@@ -1,0 +1,109 @@
+/* =========================
+1. 全局默认滚动条变量定义
+   ========================= */
+:root {
+  --scrollbar-width-default: 11px;
+  /* 默认滚动条宽度 */
+  --scroll-track-default: transparent;
+  /* 默认轨道背景：透明 */
+  --scroll-thumb-default-light: #d0d0d0;
+  /* 亮色主题滑块颜色 */
+  --scroll-thumb-hover-default-light: #c8c8c8;
+  /* 亮色主题滑块悬浮颜色 */
+  --scroll-thumb-default-dark: #4a4a4a;
+  /* 暗黑主题滑块颜色 */
+  --scroll-thumb-hover-default-dark: #666666;
+  /* 暗黑主题滑块悬浮颜色 */
+}
+
+/* =========================
+2. 全局默认滚动条样式（优先级较低）
+     ========================= */
+.scrollbar-default::-webkit-scrollbar {
+  width: var(--scrollbar-width-default);
+  /* 滚动条宽度 */
+}
+
+.scrollbar-default::-webkit-scrollbar-track {
+  background: var(--scroll-track-default);
+  /* 轨道背景色（透明） */
+}
+
+.scrollbar-default::-webkit-scrollbar-thumb {
+  /* 滑块颜色由主题变量决定，下面会在 .light/.dark 中覆盖 */
+  background-color: var(--scroll-thumb-default-light);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  /* 内部留白更优雅 */
+  background-clip: content-box;
+  transition: background-color 0.3s ease;
+}
+
+.scrollbar-default::-webkit-scrollbar-thumb:hover {
+  /* 悬浮时轻微加深，由主题变量覆盖 */
+  background-color: var(--scroll-thumb-hover-default-light);
+}
+
+/* Firefox 支持 */
+.scrollbar-default {
+  scrollbar-width: thin;
+  /* thumb track 同样使用主题变量 */
+  scrollbar-color: var(--scroll-thumb-default-light) var(--scroll-track-default);
+}
+
+/* =========================
+3. 主题覆盖：亮色 vs 暗黑
+     ========================= */
+/* 亮色模式下使用浅灰滑块 */
+.light .scrollbar-default::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb-default-light);
+}
+
+.light .scrollbar-default::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover-default-light);
+}
+
+.light .scrollbar-default {
+  scrollbar-color: var(--scroll-thumb-default-light) var(--scroll-track-default);
+}
+
+/* 暗黑模式下使用中灰滑块 */
+.dark .scrollbar-default::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb-default-dark);
+}
+
+.dark .scrollbar-default::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover-default-dark);
+}
+
+.dark .scrollbar-default {
+  scrollbar-color: var(--scroll-thumb-default-dark) var(--scroll-track-default);
+}
+
+
+/* === 强制暗黑滚动条样式：用于深色背景容器 === */
+.scrollbar-dark-theme::-webkit-scrollbar {
+  width: 11px;
+}
+
+.scrollbar-dark-theme::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-dark-theme::-webkit-scrollbar-thumb {
+  background-color: #4a4a4a;  /* 深灰滑块 */
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.3s ease;
+}
+
+.scrollbar-dark-theme::-webkit-scrollbar-thumb:hover {
+  background-color: #666666;  /* 悬浮时轻微变亮 */
+}
+
+/* Firefox 兼容 */
+.scrollbar-dark-theme {
+  scrollbar-width: thin;
+  scrollbar-color: #4a4a4a transparent;
+}
