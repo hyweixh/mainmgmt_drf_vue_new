@@ -9,6 +9,8 @@ import requestLog from '@/views/auth/requestLog/requestLog.vue';
 import deviceList from '@/views/devicemgmt/list.vue';  // ✅ 导入设备列表
 import devicemgmt_add from '@/views/devicemgmt/add.vue';
 import devicemgmt_edit from '@/views/devicemgmt/edit.vue'; 
+import checklanesoftList from '@/views/checklanesoft/checklanesoft_list.vue';
+
 
 const routes = [
   {
@@ -66,6 +68,21 @@ const routes = [
             props: true
           }
           
+        ]
+      },
+      {
+        path: '/checklanesoft',
+        name: 'checklanesoft',
+        redirect: '/checklanesoft/list',
+        meta: { text: '收费系统', icon: 'app' },
+        children: [
+          {
+            path: 'list',
+            name: 'checklanesoft_list',
+            component: checklanesoftList,
+            meta: { text: '车道软件信息', icon: 'server' }
+            // 27:"checklanesoft:view"
+          },          
         ]
       },
       {

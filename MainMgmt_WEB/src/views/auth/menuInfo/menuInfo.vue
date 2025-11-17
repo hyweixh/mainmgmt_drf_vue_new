@@ -111,33 +111,113 @@ const showDialog = (row, mode) => {
 };
 let selectedNode;
 //菜单管理
+// const requestManagerMenu = async () => {
+//   formRef.value.validate(async (valid) => {
+//     if (valid) {
+//       const data = { ...form.value };
+//       try {
+//         let newId;
+//         if (dialogMode.value === 'add') {
+//           await authHttp.addMenu(data);
+//           ElMessage.success('添加成功');
+//         } else if (dialogMode.value === 'edit') {
+//           await authHttp.updateMenu(form.value.id, data);
+//           ElMessage.success('修改成功');
+//           newId = form.value.id;
+//         }
+//         await requestMenu();
+//         nextTick(() => {
+//           if (selectedMenuId.value) {
+//             treeRef.value?.setCurrentKey(selectedMenuId.value); // 重新选中
+//           }
+//         });
+//         treeRef.value?.setCurrentKey(newId); // 重新选中：根层或者子层都通用
+//         dialogVisible.value = false;
+//       } catch (message) {
+//         ElMessage.error(message);
+//       }
+//     } else {
+//       ElMessage.error('按要求填写有效的信息');
+//     }
+//   });
+// };
 const requestManagerMenu = async () => {
   formRef.value.validate(async (valid) => {
-    if (valid) {
-      const data = { ...form.value };
-      try {
-        let newId;
-        if (dialogMode.value === 'add') {
-          await authHttp.addMenu(data);
-          ElMessage.success('添加成功');
-        } else if (dialogMode.value === 'edit') {
-          await authHttp.updateMenu(form.value.id, data);
-          ElMessage.success('修改成功');
-          newId = form.value.id;
-        }
-        await requestMenu();
-        nextTick(() => {
-          if (selectedMenuId.value) {
-            treeRef.value?.setCurrentKey(selectedMenuId.value); // 重新选中
-          }
-        });
-        treeRef.value?.setCurrentKey(newId); // 重新选中：根层或者子层都通用
-        dialogVisible.value = false;
-      } catch (message) {
-        ElMessage.error(message);
+    if (!valid) {
+      ElMessage.error('请按要求填写有效的信息');
+      return;
+    }
+
+    const data = { ...form.value };
+    
+    // **调试日志**
+    console.log('准备提交菜单数据:', data);
+    
+    try {
+      let response;
+      
+      if (dialogMode.value === 'edit') {
+        response = await authHttp.updateMenu(form.value.id, data);
+        ElMessage.success('修改成功');
+      } else if (dialogMode.value === 'add') {
+        response = await authHttp.addMenu(data);
+        ElMessage.success('添加成功');
       }
-    } else {
-      ElMessage.error('按要求填写有效的信息');
+      
+      // **关键修复：检查响应是否包含错误**
+      if (response && (response.statusCode === 400 || response.status === 400 || response.detail)) {
+        // 手动抛出错误，让 catch 捕获
+        throw response;
+      }
+      
+      await requestMenu();
+      nextTick(() => {
+        treeRef.value?.setCurrentKey(selectedMenuId.value);
+      });
+      dialogVisible.value = false;
+      
+    } catch (error) {
+      // **核心：提取详细错误信息**
+      console.error('菜单操作失败:', error);
+      
+      let errorMsg = '操作失败';
+      
+      // Django REST framework 格式
+      if (error?.detail) {
+        errorMsg = error.detail;
+      } 
+      // Axios 错误格式
+      else if (error?.response?.data?.detail) {
+        errorMsg = error.response.data.detail;
+      }
+      // 字段验证错误
+      else if (error?.response?.data) {
+        const responseData = error.response.data;
+        const fieldErrors = Object.entries(responseData)
+          .map(([key, value]) => {
+            if (Array.isArray(value)) return `${key}: ${value.join(', ')}`;
+            return `${key}: ${value}`;
+          })
+          .join('; ');
+        errorMsg = fieldErrors || errorMsg;
+      }
+      // 兜底
+      else if (typeof error === 'string') {
+        errorMsg = error;
+      } else {
+        errorMsg = JSON.stringify(error);
+      }
+      
+      // **确保错误消息不为空**
+      if (!errorMsg || errorMsg === '{}') {
+        errorMsg = '操作失败：服务器返回 400 错误（数据验证失败）';
+      }
+      
+      ElMessage.error({
+        message: errorMsg,
+        duration: 5000,
+        showClose: true
+      });
     }
   });
 };

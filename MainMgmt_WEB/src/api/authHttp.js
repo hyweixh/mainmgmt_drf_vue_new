@@ -9,37 +9,6 @@ const login = (username, password, captcha_key = null, offset_x = null) => {
   return http.post(path, data);
 };
 
-// 获取滑动验证码
-// const getSliderCaptcha = () => {
-//   const path = '/api/auth/slider-captcha';
-//   return http.get(path);
-// };
-
-// const verifySlider = (captcha_key, offset_x) => {
-//   const path = '/api/auth/slider-verify';
-//   return http.post(path,{captcha_key, offset_x})
-// }
-
-//  普通用户修改密码
-// const resetPassword = (password_old, pwd1, pwd2) => {
-//   const path = '/api/auth/pwd';
-//   return http.post(path, { password_old, pwd1, pwd2 });
-// };
-
-/* ==================  管理员重置用户密码  ================== */
-// 2025-10-21 by wxh
-// 管理员重置用户密码
-// const adminResetPassword = (userId, newPwd) => {
-//   const path = '/api/auth/admin-reset-password';
-//   return http.post(path, { user_id: userId, new_password: newPwd });
-// };
-
-// 修改/重置密码接口
-// const change_password = (userId, newPwd) => {
-//   const path = '/api/change_password';
-//   return http.post(path, { user_id: userId, new_password: newPwd });
-// };
-
 const changePassword = (data) => {
   // data 里可能带：
   // { old_password: 'xxx', new_password: 'yyy' }               // 自己改

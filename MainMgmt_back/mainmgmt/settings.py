@@ -27,7 +27,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar',
     # 自己开发的app
-    'apps.devicemgmt'
+    'apps.devicemgmt',
+    'apps.checklanesoft'
 ]
 
 # 核心中间件
@@ -65,7 +66,20 @@ DATABASES = {
         "HOST": env.str('DB_HOST'),
         "PORT": env.str('DB_PORT'),
         'default-character-set': 'utf8mb4'
-    }
+    },
+    # 'mssql': {
+    #     'ENGINE': 'mssql',
+    #     'NAME': 'roaddb_qxsj',
+    #     'USER': 'hyits',
+    #     'PASSWORD': 'hyits_93',
+    #     'HOST': '127.0.0.1',
+    #     'PORT': '1433',
+    #     'OPTIONS': {
+    #         'driver': 'ODBC Driver 18 for SQL Server',
+    #         'MARS_Connection': 'True',
+    #         # 'trusted_connection': 'yes',
+    #     }
+    # }
 }
 
 # Django REST Framework 全局配置
@@ -150,6 +164,12 @@ CACHES = {
         'TIMEOUT': 300,  # 5分钟过期
     }
 }
+# mssql参数
+MSSQL_SERVER = '127.0.0.1'
+MSSQL_DATABASE = 'roaddb_qxsj'
+MSSQL_USER = 'hyits'
+MSSQL_PW = 'hyits_93'
+MSSQL_PORT = '1433'
 
 # 日志配置
 LOGGING = {

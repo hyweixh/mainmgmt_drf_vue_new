@@ -13,6 +13,7 @@ urlpatterns = [
 
     # ✅ 新增：设备管理模块（包含子网类型、设备类型、设备信息等）
     path('api/devicemgmt/', include('apps.devicemgmt.urls')),  # 设备管理
+    path('api/checklanesoft/', include('apps.checklanesoft.urls')),  # 车道软件信息
 
     # drf_spectacular
     path('api/schema/', SpectacularAPIView.as_view(permission_classes=[AllowAny]), name='schema'),

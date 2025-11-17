@@ -56,7 +56,7 @@ const downloadDeviceinfos = (token, pks = []) => {
         responseType: 'blob',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',  // ✅ 添加这个
+            'Content-Type': 'application/json',  
         }
     };
     

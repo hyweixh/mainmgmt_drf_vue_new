@@ -1,0 +1,23 @@
+from django.db import models
+
+class Checklanesoft(models.Model):
+    stationno = models.SmallIntegerField(verbose_name="收费站编号")
+    tollStationname = models.CharField(verbose_name="收费站", max_length=32)
+    laneno = models.SmallIntegerField(verbose_name="车道编号")
+    lanetypename = models.CharField(verbose_name="车道类型", max_length=16)
+    obublacklistversion = models.CharField(verbose_name="OBU状态名单", max_length=32)
+    spcrateversion = models.CharField(verbose_name="最小费率", max_length=16)
+    greenreservelistversion = models.CharField(verbose_name="绿通预约", max_length=16)
+    bulkvehreserveversion = models.CharField(verbose_name="大件运输车", max_length=16)
+    laneservtime = models.CharField(verbose_name="车道时间", max_length=25)
+    lanebeidoutime = models.CharField(verbose_name="北斗时间", max_length=30)
+    lanerateversion = models.CharField(verbose_name="承载门架费率", max_length=30)
+    opsver = models.CharField(verbose_name="车道软件版本", max_length=25)
+    inspector = models.CharField(verbose_name="检查人员", max_length=32)
+    inspecttime = models.DateTimeField(verbose_name="检查时间", null=True, blank=True)
+    inspectresult = models.CharField(verbose_name="检查结果", max_length=32, null=True, blank=True)
+    confirmer = models.CharField(verbose_name="确认人员", max_length=32, null=True, blank=True)
+    confirmdatetime = models.DateTimeField(verbose_name="确认时间", null=True, blank=True)
+    isconfirm = models.BooleanField(verbose_name='是否确认', default=False)
+    error_desc = models.CharField(verbose_name="故障描述", max_length=100, null=True, blank=True)
+    error_proc = models.CharField(verbose_name="故障处理", max_length=100, null=True, blank=True)

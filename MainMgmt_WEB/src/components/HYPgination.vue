@@ -40,7 +40,7 @@ let page = defineModel({required: true})
     
 .total-records {    
     margin-left: 50px;  
-    /* font-size: 16px;  等于根元素字体大小，通常为16px */
+    font-size: 16px;  /* 等于根元素字体大小，通常为16px */
     color:green       
 }    
 </style>
