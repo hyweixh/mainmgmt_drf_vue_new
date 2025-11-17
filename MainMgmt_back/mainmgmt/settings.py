@@ -55,6 +55,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',  # ✅ 确保用户已登录
     ],
 }
+# 3. ✅ 核心修复：暴露 Content-Disposition 头
+CORS_EXPOSE_HEADERS = [
+    'Content-Disposition',
+    'Content-Type',
+    # 如果有其他自定义头，也加在这里
+]
 
 # 数据库配置
 DATABASES = {

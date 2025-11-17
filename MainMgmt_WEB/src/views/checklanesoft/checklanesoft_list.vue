@@ -224,66 +224,62 @@ const export_excels = async () =>{
     downloadDialogVisible.value = true      
     }    
 
-const onDownload =async () =>{
-    // ElMessage.success(timeFormatter.stringFromDate(selectMonth.value))
-    let selectY = timeFormatter.stringFromDate(selectMonth.value).split('-')[0]
-    let selectM = timeFormatter.stringFromDate(selectMonth.value).split('-')[1]
-    let selectYM =  selectY+'-'+ selectM
-    // console.log("导出日期：",selectYM)
-    try {    
-        const response = await checklanesoftHttp.download_checklanesoft(selectYM);  
-        let href = URL.createObjectURL(response.data)  
-        // console.log("response.data====",response.data)
-        const a = document.createElement("a")
-        a.href = href        
-        a.setAttribute('download', '车道软件参数.xlsx')       
-        document.body.appendChild(a)       
-        a.click()
+const onDownload = async () => {
+  let selectYM = timeFormatter.stringFromDate(selectMonth.value).slice(0, 7); // 简化日期处理
+
+  try {
+    const response = await checklanesoftHttp.download_checklanesoft(selectYM);
+    
+    // 1. 初始化为 null（关键！不设置默认值）
+    let filename = null;
+    
+    // 2. 调试：打印所有响应头
+    console.log('响应头:', response.headers);
+
+    // 3. 尝试从后端解析文件名
+    const contentDisposition = response.headers?.['content-disposition'] || 
+                              response.headers?.['Content-Disposition'];
+    if (contentDisposition) {
+      console.log('Content-Disposition:', contentDisposition);
       
-        document.body.removeChild(a)       
-        URL.revokeObjectURL(href)    
-      } catch (error) {    
-        ElMessage.error('导出Excel表错误！', error);          
-      }    
+      // 优先解析 filename* (RFC 5987)
+      const utf8Match = contentDisposition.match(/filename\*=utf-8''([^;]+)/i);
+      if (utf8Match?.[1]) {
+        filename = decodeURIComponent(utf8Match[1]);
+        // console.log('✅ 使用后端文件名(utf8):', filename);
+      } else {
+        // 回退到 filename
+        const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+        filename = filenameMatch?.[1];
+        console.log('✅ 使用后端文件名:', filename);
+      }
+    } else {
+      console.warn('⚠️ 未找到 Content-Disposition 响应头');
     }
-// const onDownload = async () => {  
-//     let selectY = timeFormatter.stringFromDate(selectMonth.value).split('-')[0];  
-//     let selectM = timeFormatter.stringFromDate(selectMonth.value).split('-')[1];  
-//     let selectYM = selectY + '-' + selectM;  
-  
-//     try {  
-//         const response = await checklanesoftHttp.download_checklanesoft(selectYM);  
-//         if (!response || !response.data) {  
-//             throw new Error('服务器返回空响应或没有数据');  
-//         }  
-//         let href = URL.createObjectURL(new Blob([response.data]));  // 确保response.data是Blob或ArrayBuffer  
-//         const a = document.createElement("a");  
-//         a.href = href;  
-//         a.setAttribute('download', '车道软件参数.xlsx');  
-//         document.body.appendChild(a);  
-//         a.click();  
-//         document.body.removeChild(a);  
-//         URL.revokeObjectURL(href);  
-//     } catch (error) {  
-//         // 打印错误详细信息到控制台（开发时使用）  
-//         ElMessage.error('导出Excel表错误！', error);  
-          
-//         // 检查错误对象是否有响应属性  
-//         if (error.response) {  
-//             // 例如，Axios 的错误对象有 status 和 statusText 属性  
-//             ElMessage.error('Status:', error.response.status);  
-//             ElMessage.error('Status Text:', error.response.statusText);  
-//             // 如果需要，还可以打印出响应数据  
-//             ElMessage.error('Response Data:', error.response.data);  
-//         } else {  
-//             // 处理没有响应的错误（例如网络问题）  
-//             ElMessage.error('请求失败，没有响应');  
-//         }  
-          
-//         // 显示用户友好的错误消息  
-//         ElMessage.error('导出Excel表错误！', '具体错误信息：' + (error.message || '未知错误'));  
-//     }  
-// }
+    
+    // 4. 如果后端未提供，才使用前端默认（最后手段）
+    if (!filename) {
+      filename = `车道软件参数_${selectYM}.xlsx`;
+      console.log('⚠️ 使用前端默认文件名:', filename);
+    }
+
+    // 5. 执行下载
+    const href = URL.createObjectURL(response.data);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = filename; // ✅ 此时 filename 要么是后端提供的，要么是前端兜底的
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(href);
+
+    ElMessage.success(`导出成功: ${filename}`);
+  } catch (error) {
+    ElMessage.error(`导出失败: ${error.message || '未知错误'}`);
+    console.error('导出错误:', error);
+  }
+};
+
 </script>
 <template>
     <HYDialog v-model="ConfirmdialogVisible" title="提示" @submit="onCheckSoftwareLaneConfirm" @cancel="onDialogCancel">
@@ -324,7 +320,7 @@ const onDownload =async () =>{
                     <el-button type="primary" icon="download" class="ml-10" @click="export_excels">导出到Excel</el-button>
                 </el-col>
                 <el-col :span="16" class="d-flex justify-content-end">
-                    <el-form-item label="查询类型" label-width="80px">
+                    <el-form-item label="查询类型" label-width="110px" class="el-form-item__label">
                         <el-select v-model="filterForm.queryType" placeholder="请选择查询类型" class=select_with>
                             <el-option label="OBU黑名单" value="obublacklistversion"></el-option>
                             <el-option label="最小费率" value="spcrateversion"></el-option>
@@ -333,7 +329,7 @@ const onDownload =async () =>{
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="查询条件" label-width="80px">
+                    <el-form-item label="查询条件" label-width="110px" class="el-form-item__label">
                         <el-select v-model="filterForm.queryCondition" placeholder="请选择条件" class=select_with>
                             <el-option v-for="condition in queryConditions" :key="condition" :label="condition"
                                 :value="condition">
@@ -353,23 +349,23 @@ const onDownload =async () =>{
                 <!-- <template #default="scope">{{ scope.$index + 1 }}</template>
                 </el-table-column> -->
                 <!-- <el-table-column prop="stationno" label="站编码" width="80"></el-table-column>                -->
-                <el-table-column prop="tollStationname" label="站名" width="120"></el-table-column>
-                <el-table-column prop="laneno" label="车道编码" width="80"></el-table-column>
-                <el-table-column prop="lanetypename" label="车道类型" width="100"></el-table-column>
+                <el-table-column prop="tollStationname" label="站名" width="150"></el-table-column>
+                <el-table-column prop="laneno" label="车道编码" width="120"></el-table-column>
+                <el-table-column prop="lanetypename" label="车道类型" width="120"></el-table-column>
 
                 <el-table-column prop="obublacklistversion" label="OBU状态名单" width="200"></el-table-column>
-                <el-table-column prop="spcrateversion" label="最小费率版本" width="120"></el-table-column>
-                <el-table-column prop="greenreservelistversion" label="绿通预约" width="125"></el-table-column>
+                <el-table-column prop="spcrateversion" label="最小费率版本" width="150"></el-table-column>
+                <el-table-column prop="greenreservelistversion" label="绿通预约" width="145"></el-table-column>
                 <!-- <el-table-column prop="bulkvehreserveversion" label="大件运输车" width="125"></el-table-column> -->
                 <!-- <el-table-column prop="laneservtime" label="车道时间" width="180"></el-table-column> -->
-                <el-table-column prop="laneservtime" label="车道时间" width="180">
+                <el-table-column prop="laneservtime" label="车道时间" width="200">
                     <template #default="scope">
                         <span :style="{ color: scope.row.laneservtime !== scope.row.lanebeidoutime ? 'red' : 'black' }">
                             {{ scope.row.laneservtime }}
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="lanebeidoutime" label="北斗时间" width="180">
+                <el-table-column prop="lanebeidoutime" label="北斗时间" width="200">
                     <template #default="scope">
                         <span :style="{ color: scope.row.laneservtime !== scope.row.lanebeidoutime ? 'red' : 'black' }">
                             {{ scope.row.lanebeidoutime }}
@@ -377,8 +373,8 @@ const onDownload =async () =>{
                     </template>
                 </el-table-column>
 
-                <el-table-column prop="lanerateversion" label="承载门架费率" width="225"></el-table-column>
-                <el-table-column prop="opsver" label="车道软件版本" width="200"></el-table-column>
+                <el-table-column prop="lanerateversion" label="承载门架费率" width="300"></el-table-column>
+                <el-table-column prop="opsver" label="车道软件版本" width="250"></el-table-column>
                 <!-- <el-table-column prop="inspector" label="检查人员" width="100"></el-table-column> -->
                 <!-- <el-table-column prop="inspecttime" label="检查时间" width="180"></el-table-column> -->
                 <!-- <el-table-column prop="inspectresult" label="检查结果" width="180"></el-table-column> -->
@@ -423,7 +419,11 @@ const onDownload =async () =>{
         flex-direction: column;  
     }  
     .select_with{
-        width:300px;  
+        width:250px;  
         margin-right: 20px;
+    }
+    /* 使用 ::v-deep 穿透 scoped，修改标签字体大小 */
+    ::v-deep .el-form-item__label {
+    font-size: 16px; /* 设置为需要的字体大小 */
     }
 </style>

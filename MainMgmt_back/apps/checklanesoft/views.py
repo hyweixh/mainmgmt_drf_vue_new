@@ -1,4 +1,6 @@
 # import time
+import datetime
+from django.db.models import Q
 from django.utils import timezone
 from django.conf import settings
 from django.http import JsonResponse
@@ -240,42 +242,84 @@ def checklanesoft_import_history(request):
 
     return JsonResponse({'message': ''}, status=201)
 
+from django.views.decorators.http import require_http_methods
+import logging
+logger = logging.getLogger(__name__)
+
+
+@require_http_methods(["GET"])
 def checklanesoft_download(request):
-    selYM_str = request.GET.get('selYM', '2020-01')
-    queryset = Checklanesoft.objects.filter(error_desc__isnull=False,
-                                             isconfirm=1,
-                                             inspecttime__icontains=selYM_str
-                                             )
-    # 检查 queryset 是否为空
-    if not queryset.exists():
-        return JsonResponse({'error': '没有相关数据'}, status=404)
+    """导出车道软件参数Excel"""
+    try:
+        selYM_str = request.GET.get('selYM', '2020-01')
 
-    result = queryset.values(
-        'tollStationname',
-        'laneno',
-        'lanetypename',
-        'error_desc',
-        'error_proc',
-        'inspector',
-        'inspecttime',
-    )
+        # 参数验证
+        if not selYM_str or len(selYM_str) != 7:
+            return JsonResponse({'error': '参数格式应为YYYY-MM'}, status=400)
 
-    headers = [
-                {'titlename': '收费站', 'col_width': 20},
-                {'titlename': '车道号', 'col_width': 16},
-                {'titlename': '车道类型', 'col_width': 16},
-                {'titlename': '故障描述', 'col_width': 50},
-                {'titlename': '故障处理', 'col_width': 50},
-                {'titlename': '巡检人员', 'col_width': 14},
-                {'titlename': '巡检时间', 'col_width': 20},
-                ]
-    export_filename = '车道软件参数巡检表.xlsx'
-    table_filename = '车道软件参数巡检'
+        # ✅ 1. 查询 ORM 对象（不要 values() 或 values_list()）
+        queryset = Checklanesoft.objects.filter(
+            ~Q(error_desc__isnull=True) & ~Q(error_desc=''),
+            isconfirm__in=[True, 1, "1", "True"],
+            inspecttime__startswith=selYM_str
+        )
 
-    exporter = ExcelExporter(result, export_filename, table_filename, headers)
-    response = exporter.export()
+        # logger.info(f"查询到 {queryset.count()} 条记录")
 
-    return response
+        if not queryset.exists():
+            return JsonResponse({
+                'error': f'{selYM_str}暂无已确认且填写故障描述的记录'
+            }, status=404)
 
+        # ✅ 2. 手动构建元组列表（核心修复）
+        # 定义字段顺序（必须与 headers 一一对应）
+        FIELD_ORDER = [
+            'tollStationname',
+            'laneno',
+            'lanetypename',
+            'error_desc',
+            'error_proc',
+            'inspector',
+            'inspecttime'
+        ]
 
+        # 将 ORM 对象转换为元组列表
+        export_data = []
+        for obj in queryset:
+            row = []
+            for field_name in FIELD_ORDER:
+                val = getattr(obj, field_name)
 
+                # 处理 datetime 类型
+                if isinstance(val, datetime.datetime):
+                    row.append(val.strftime('%Y-%m-%d %H:%M:%S'))
+                else:
+                    row.append(val or '')  # 将 None 转换为空字符串
+
+            export_data.append(tuple(row))
+
+        # logger.info(f"第一条导出数据: {export_data[0] if export_data else '无数据'}")
+
+        # ✅ 3. 定义表头（与 FIELD_ORDER 严格对应）
+        headers = [
+            {'titlename': '收费站', 'col_width': 20},
+            {'titlename': '车道号', 'col_width': 16},
+            {'titlename': '车道类型', 'col_width': 16},
+            {'titlename': '故障描述', 'col_width': 50},
+            {'titlename': '故障处理', 'col_width': 50},
+            {'titlename': '巡检人员', 'col_width': 14},
+            {'titlename': '巡检时间', 'col_width': 20},
+        ]
+
+        # ✅ 4. 调用 ExcelExporter（传入纯 list）
+        exporter = ExcelExporter(
+            export_data,  # 纯元组列表，不是 QuerySet
+            f'checklanesoft_export_{selYM_str}.xlsx',
+            '车道软件参数巡检表',
+            headers
+        )
+        return exporter.export()
+
+    except Exception as e:
+        logger.error(f"导出失败: {str(e)}", exc_info=True)
+        return JsonResponse({'error': f'导出失败: {str(e)}'}, status=500)

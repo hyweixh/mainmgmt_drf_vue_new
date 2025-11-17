@@ -34,10 +34,6 @@ const get_queryCondition = (querytype) => {
 
 // 更新故障描述、故障处理内容
 const update_error_desc_proc = (id,error_desc,error_proc) => {    
-    console.error('【调试】传入的id类型:', typeof id);
-    console.error('【调试】传入的id值:', id);
-    console.error('【调试】传入的id JSON:', JSON.stringify(id));
-    
     const path = `/api/checklanesoft/checklanesoft/${id}`;    
     // console.log("path>>>",path,"mem:",mem.value)
     const data = {  

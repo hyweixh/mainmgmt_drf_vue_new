@@ -1,6 +1,8 @@
 from django.urls import path,include
-from rest_framework.routers import DefaultRouter
 from . import views
+from rest_framework.routers import DefaultRouter
+# from .views import get_Checklanesoft_info, UpdateAllConfirmLaneSoftView,checklanesoft_download
+
 
 # app_name = 'checklanesoft'  # 建议移除，避免命名空间干扰
 
@@ -17,5 +19,5 @@ urlpatterns = [
     path('getchecklanesoft', views.get_Checklanesoft_info, name='getchecklanesoft'),
     path('getquerycondition', views.get_query_condition, name='getquerycondition'),
     path('confirm', views.UpdateAllConfirmLaneSoftView.as_view(), name='confirm'),
-    path('api/checklanesoft/download', views.checklanesoft_download, name='download'),
+    path('download', views.checklanesoft_download, name='download'),
 ]
