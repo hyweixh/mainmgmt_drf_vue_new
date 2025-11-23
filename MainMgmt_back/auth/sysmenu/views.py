@@ -4,7 +4,7 @@ from rest_framework import status
 from .models import SysMenu
 from .serializers import SysMenuSerializer
 from django.shortcuts import get_object_or_404
-from auth.rbac.permissions.drf import CustomPermissionMixin
+from auth.rbac.permissions.rbac_permission import CustomPermissionMixin
 from django.db import transaction
 from rest_framework.decorators import action
 from django.db.models import F

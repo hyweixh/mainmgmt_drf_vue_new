@@ -1,4 +1,4 @@
-# rbac/utils/drf.py
+# rbac/utils/rbac_permission.py
 from typing import Set
 from auth.sysuser.models import opsUser          # 用户模型
 from auth.sysrole.models import SysUserRole

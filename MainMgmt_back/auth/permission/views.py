@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from .serializers import *
 from .models import SysPermission
 from .serializers import SysPermissionSerializer
-from auth.rbac.permissions.drf import CustomPermissionMixin
+from auth.rbac.permissions.rbac_permission import CustomPermissionMixin
 import pandas as pd
 from django.http import HttpResponse
 from rest_framework.views import APIView

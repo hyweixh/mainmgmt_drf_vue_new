@@ -14,7 +14,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny  # 用于公开接口
 
 # ✅ 导入自定义权限类
-from auth.rbac.permissions.drf import CustomPermissionMixin
+from auth.rbac.permissions.rbac_permission import CustomPermissionMixin
 
 from .models import DeviceInfo, SubnetType, DeviceType
 from .serializers import (

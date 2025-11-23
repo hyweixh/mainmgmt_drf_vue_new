@@ -80,6 +80,7 @@ class opsUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["password"]
 
     class Meta:
+        # db_table = "sys_user"
         ordering = ("-last_login", )   # 根据date_joined倒叙排列
 
 

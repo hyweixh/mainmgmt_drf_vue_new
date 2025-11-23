@@ -111,11 +111,11 @@ class CustomPermissionMixin(BasePermission):
         """
         # 定义标准映射关系
         method_action_map = {
-            'POST': 'create',  # 创建资源
-            'PUT': 'update',  # 全量更新
-            'PATCH': 'update',  # 部分更新（与PUT使用相同权限）
+            'POST': 'create',     # 创建资源
+            'PUT': 'update',      # 全量更新
+            'PATCH': 'update',    # 部分更新（与PUT使用相同权限）
             'DELETE': 'destroy',  # 删除资源
-            'GET': 'list',  # 获取列表（通常GET对应list或retrieve）
+            'GET': 'list',        # 获取列表（通常GET对应list或retrieve）
         }
         # 如果方法不在映射中，则返回小写的方法名作为备用
         return method_action_map.get(method, method.lower())

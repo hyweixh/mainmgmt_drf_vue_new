@@ -4,7 +4,7 @@ from auth.sysuser.serializers import *
 from rest_framework.views import APIView
 from django.db import transaction
 from auth.sysmenu.serializers import *
-from auth.rbac.permissions.drf import CustomPermissionMixin
+from auth.rbac.permissions.rbac_permission import CustomPermissionMixin
 from rest_framework import viewsets
 
 class SysRoleViewSet(viewsets.ModelViewSet):

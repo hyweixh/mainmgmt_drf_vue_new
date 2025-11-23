@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from utils.databaseclass import Mssql_class
 from rest_framework.views import APIView
 from utils.export_excels import ExcelExporter
-from auth.rbac.permissions.drf import CustomPermissionMixin  # ✅ 引入权限类
+from auth.rbac.permissions.rbac_permission import CustomPermissionMixin  # ✅ 引入权限类
 
 class ChecklanesoftViewSet(viewsets.ModelViewSet):
     queryset = Checklanesoft.objects.all().order_by('stationno', 'laneno')

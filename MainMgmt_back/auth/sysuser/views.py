@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from auth.permission.models import *
 from auth.sysmenu.serializers import *
 from auth.sysmenu.views import build_menu_tree
-from auth.rbac.permissions.drf import CustomPermissionMixin
+from auth.rbac.permissions.rbac_permission import CustomPermissionMixin
 from .auth import *
 from .serializers import *
 from utils.page import Pagination
