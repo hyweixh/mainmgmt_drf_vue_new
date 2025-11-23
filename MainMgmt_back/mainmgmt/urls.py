@@ -14,6 +14,10 @@ urlpatterns = [
     # ✅ 新增：设备管理模块（包含子网类型、设备类型、设备信息等）
     path('api/devicemgmt/', include('apps.devicemgmt.urls')),  # 设备管理
     path('api/checklanesoft/', include('apps.checklanesoft.urls')),  # 车道软件信息
+    path('api/vehlossrate/', include('apps.vehlossrate.urls')),  # 车牌识别率
+    path('api/holidayfree/', include('apps.holidayfree.urls')),   # 节假日免费参数
+    path('api/lanepsaminfo/', include('apps.lanepsaminfo.urls')),  # 车道psam卡信息
+    path('api/gantrypsaminfo/', include('apps.gantrypsaminfo.urls')),   # 门架psam卡信息
 
     # drf_spectacular
     path('api/schema/', SpectacularAPIView.as_view(permission_classes=[AllowAny]), name='schema'),

@@ -29,7 +29,7 @@ class ExcelExporter:
         self.filename = str(filename)
         self.table_name = table_name
         self.headers = headers
-        logger.info(f"ExcelExporter 初始化 - 文件名: '{self.filename}'")
+        # logger.info(f"ExcelExporter 初始化 - 文件名: '{self.filename}'")
 
     def export(self):
         """执行导出操作，返回HttpResponse"""
@@ -42,7 +42,7 @@ class ExcelExporter:
         response[
             'Content-Disposition'] = f"attachment; filename*=utf-8''{encoded_filename}; filename=\"{self.filename}\""
 
-        logger.info(f"开始导出Excel - 文件名: {self.filename}, 工作表名: {self.table_name}")
+        # logger.info(f"开始导出Excel - 文件名: {self.filename}, 工作表名: {self.table_name}")
 
         # 使用Pandas将DataFrame写入Excel（通过BytesIO）
         output = BytesIO()
@@ -53,23 +53,30 @@ class ExcelExporter:
                 df_columns = [header['titlename'] for header in self.headers]
                 if not self.queryset:
                     df = pd.DataFrame(columns=df_columns)
-                    logger.warning("导出数据为空，创建空DataFrame")
+                    # .warning("导出数据为空，创建空DataFrame")
                 else:
                     df = pd.DataFrame(self.queryset, columns=df_columns)
-                    logger.info(f"从列表创建DataFrame，共 {len(self.queryset)} 行")
+                    #  logger.info(f"从列表创建DataFrame，共 {len(self.queryset)} 行")
             else:
                 # 原始的QuerySet情况
                 field_to_title = {field.name: header['titlename'] for field, header in
                                   zip(self.queryset.model._meta.get_fields(include_parents=False), self.headers)}
                 df_data = list(self.queryset.values_list(*field_to_title.keys()))
                 df = pd.DataFrame(df_data, columns=field_to_title.values())
-                logger.info(f"从QuerySet创建DataFrame，共 {len(df_data)} 行")
+                # logger.info(f"从QuerySet创建DataFrame，共 {len(df_data)} 行")
 
             # 设置字体和颜色
             font_color = Color(rgb='000000')
             yichang_font_color = Color(rgb='FF0000')  # 红色
             font_style2 = Font(name='微软雅黑', sz=12, b=False, color=font_color)
             font_style3 = Font(name='h1', sz=11, b=False, color=yichang_font_color)
+
+            # 自动检测并移除所有 datetime 列的时区信息
+            for col in df.columns:
+                if pd.api.types.is_datetime64_any_dtype(df[col]):
+                    # 检查时区信息
+                    if hasattr(df[col].dtype, 'tz') and df[col].dtype.tz is not None:
+                        df[col] = df[col].dt.tz_localize(None)  # 转换为无时区时间
 
             df.to_excel(writer, sheet_name=self.table_name, index=False, startrow=1)
             workbook = writer.book
@@ -116,6 +123,6 @@ class ExcelExporter:
         # 保存Excel到response
         output.seek(0)
         response.write(output.getvalue())
-        logger.info(f"Excel导出成功，文件大小: {len(output.getvalue())} bytes")
+        # logger.info(f"Excel导出成功，文件大小: {len(output.getvalue())} bytes")
 
         return response

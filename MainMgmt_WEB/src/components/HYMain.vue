@@ -10,7 +10,8 @@
 </script>
 
 <template>
-    <el-space direction="vertical" fill :size="20" style="width: 100%">
+    <!-- fill :size="5" el-card之间的距离-->
+    <el-space direction="vertical" fill :size="5" style="width: 100%">
         <HYPageHeader :content="props.title"></HYPageHeader>
         <!-- 预留插槽 -->
         <slot></slot>

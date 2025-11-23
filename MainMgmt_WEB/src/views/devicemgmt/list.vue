@@ -185,8 +185,25 @@ const onCopyPwd = async (user) => {
   const pwd = passpwds[key]
   if (!pwd) return ElMessage.warning('该用户密码为空')
 
-  await navigator.clipboard.writeText(pwd)
-  ElMessage.success('密码已复制到剪贴板')
+  // 检测是否支持 Clipboard API
+  if (navigator.clipboard) {
+    // 现代浏览器（localhost 或 HTTPS）
+    try {
+      await navigator.clipboard.writeText(pwd)
+      ElMessage.success('密码已复制到剪贴板')
+    } catch (err) {
+      console.error('复制失败:', err)
+      ElMessage.error('复制失败，请手动复制')
+    }
+  } else {
+    // 降级方案：显示密码让用户手动复制,生产环境不能这样做，用https
+    ElMessage.warning({
+      message: `当前环境不支持自动复制\n请手动复制密码：${pwd}`,
+      duration: 5000, // 显示5秒，方便复制
+      showClose: true
+    })
+  }
+
   copyPwdDialogVisible.value = false
 }
 

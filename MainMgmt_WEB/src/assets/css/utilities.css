@@ -1,0 +1,23 @@
+/* src/assets/styles/utilities.css */
+
+/* 垂直居中的表单项 */
+.form-item-center {
+    margin-bottom: 0 !important;  /* 移除默认下边距 */
+    display: flex !important;
+    align-items: center !important;
+  }
+  .d-flex { 
+    display: flex; 
+  }
+  .justify-content-start {
+     justify-content: flex-start;
+     }
+  .justify-content-end { 
+    justify-content: flex-end; 
+  }
+  .align-items-center {
+     align-items: center; 
+    }   
+  .select_with { 
+    width: 200px; margin-right: 20px;
+   } 

@@ -225,58 +225,118 @@ const export_excels = async () =>{
     }    
 
 const onDownload = async () => {
-  let selectYM = timeFormatter.stringFromDate(selectMonth.value).slice(0, 7); // 简化日期处理
+  // 1. 前置验证：检查是否选择了月份
+  if (!selectMonth.value) {
+    ElMessage.warning({
+      message: '⚠️ 请先选择要导出的月份！',
+      duration: 3000,
+      showClose: true
+    });
+    return;
+  }
+  
+  // 2. 格式化月份字符串
+  let selectYM = timeFormatter.stringFromDate(selectMonth.value).slice(0, 7);
+  
+  // 3. 显示加载提示（防止重复点击）
+  const loadingMsg = ElMessage.info({
+    message: `📊 正在导出 ${selectYM} 的数据...`,
+    duration: 0 // 不自动关闭，等待手动关闭
+  });
 
   try {
+    // 4. 发起下载请求
     const response = await checklanesoftHttp.download_checklanesoft(selectYM);
     
-    // 1. 初始化为 null（关键！不设置默认值）
-    let filename = null;
-    
-    // 2. 调试：打印所有响应头
-    console.log('响应头:', response.headers);
+    // 5. 关闭加载提示
+    loadingMsg.close();
 
-    // 3. 尝试从后端解析文件名
+    // 6. 检查是否有数据（无数据时可能返回空Blob）
+    if (response.data?.size === 0) {
+      ElMessage.warning({
+        message: `${selectYM} 暂无数据记录`,
+        duration: 4000,
+        showClose: true
+      });
+      // 如果不需要下载空文件，可以在这里 return
+    }
+
+    // 7. 文件名处理逻辑
+    let filename = null;
     const contentDisposition = response.headers?.['content-disposition'] || 
                               response.headers?.['Content-Disposition'];
+    
     if (contentDisposition) {
       console.log('Content-Disposition:', contentDisposition);
       
-      // 优先解析 filename* (RFC 5987)
+      // 优先解析 filename* (UTF-8编码，RFC 5987标准)
       const utf8Match = contentDisposition.match(/filename\*=utf-8''([^;]+)/i);
       if (utf8Match?.[1]) {
         filename = decodeURIComponent(utf8Match[1]);
-        // console.log('✅ 使用后端文件名(utf8):', filename);
       } else {
-        // 回退到 filename
+        // 回退到普通 filename
         const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
         filename = filenameMatch?.[1];
-        console.log('✅ 使用后端文件名:', filename);
       }
-    } else {
-      console.warn('⚠️ 未找到 Content-Disposition 响应头');
     }
     
-    // 4. 如果后端未提供，才使用前端默认（最后手段）
+    // 如果后端未提供文件名，使用前端默认值
     if (!filename) {
       filename = `车道软件参数_${selectYM}.xlsx`;
-      console.log('⚠️ 使用前端默认文件名:', filename);
+      console.warn('⚠️ 使用前端默认文件名:', filename);
     }
 
-    // 5. 执行下载
+    // 8. 创建下载链接并触发下载
     const href = URL.createObjectURL(response.data);
     const a = document.createElement("a");
     a.href = href;
-    a.download = filename; // ✅ 此时 filename 要么是后端提供的，要么是前端兜底的
+    a.download = filename;
+    a.style.display = 'none'; // 隐藏元素
     document.body.appendChild(a);
     a.click();
+    
+    // 9. 清理DOM和内存
     document.body.removeChild(a);
     URL.revokeObjectURL(href);
 
-    ElMessage.success(`导出成功: ${filename}`);
+    // 10. 成功提示
+    ElMessage.success({
+      message: `✅ 导出成功：${filename}`,
+      duration: 3000,
+      showClose: true
+    });
+
   } catch (error) {
-    ElMessage.error(`导出失败: ${error.message || '未知错误'}`);
-    console.error('导出错误:', error);
+    // 11. 错误处理
+    loadingMsg.close(); // 确保关闭加载提示
+    
+    // 根据错误类型给出明确提示
+    if (error.response?.status === 404) {
+      ElMessage.error({
+        message: `❌ ${selectYM} 没有找到相关数据！`,
+        duration: 4000,
+        showClose: true
+      });
+    } else if (error.response?.status === 400) {
+      ElMessage.error({
+        message: `❌ 参数错误：${error.response.data?.message || '无效的月份'}`,
+        duration: 4000,
+        showClose: true
+      });
+    } else {
+      ElMessage.error({
+        message: `❌ 导出失败：${error.message || '服务器错误，请稍后重试'}`,
+        duration: 4000,
+        showClose: true
+      });
+    }
+    
+    console.error('导出错误详情:', error); // 打印完整错误对象到控制台
+  } finally {
+    // 12. 确保关闭对话框（延迟200ms确保提示消息先显示）
+    setTimeout(() => {
+      downloadDialogVisible.value = false;
+    }, 200);
   }
 };
 
@@ -311,7 +371,7 @@ const onDownload = async () => {
     </HYDialog>
 
     <HYMain title="车道软件参数" style="margin-top: 10px;">
-        <el-card>
+        <el-card class="custom-card">
             <el-row>
                 <el-col :span="8" class="d-flex justify-content-start">
                     <el-button type="primary" icon="plus" @click="onLaneSoftPSara_frMSSQL">更新</el-button>
@@ -320,8 +380,8 @@ const onDownload = async () => {
                     <el-button type="primary" icon="download" class="ml-10" @click="export_excels">导出到Excel</el-button>
                 </el-col>
                 <el-col :span="16" class="d-flex justify-content-end">
-                    <el-form-item label="查询类型" label-width="110px" class="el-form-item__label">
-                        <el-select v-model="filterForm.queryType" placeholder="请选择查询类型" class=select_with>
+                    <el-form-item label="查询类型" label-width="110px" class="form-item-cente">
+                        <el-select v-model="filterForm.queryType" placeholder="请选择查询类型" class="select_with">
                             <el-option label="OBU黑名单" value="obublacklistversion"></el-option>
                             <el-option label="最小费率" value="spcrateversion"></el-option>
                             <el-option label="承载门架费率" value="lanerateversion"></el-option>
@@ -329,7 +389,7 @@ const onDownload = async () => {
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="查询条件" label-width="110px" class="el-form-item__label">
+                    <el-form-item label="查询条件" label-width="110px" class="form-item-cente">
                         <el-select v-model="filterForm.queryCondition" placeholder="请选择条件" class=select_with>
                             <el-option v-for="condition in queryConditions" :key="condition" :label="condition"
                                 :value="condition">
@@ -403,6 +463,10 @@ const onDownload = async () => {
 </template>
 
 <style scoped>  
+    .custom-card :deep(.el-card__body) {
+        padding-top: 15px;
+        padding-bottom: 15px;
+        }
     .d-flex {  
         display: flex;  
     }  
@@ -422,8 +486,8 @@ const onDownload = async () => {
         width:250px;  
         margin-right: 20px;
     }
-    /* 使用 ::v-deep 穿透 scoped，修改标签字体大小 */
-    ::v-deep .el-form-item__label {
-    font-size: 16px; /* 设置为需要的字体大小 */
-    }
+    /* 使用 :deep 穿透 scoped，修改标签字体大小 */
+    /* :deep(.el-form-item__label) { 
+        font-size: 16px; /* 设置为需要的字体大小 */
+    /*} */
 </style>

@@ -17,6 +17,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 // 完整导入 表格库
 import VxeUITable from 'vxe-table'
 import 'vxe-table/lib/style.css'
+import '@/assets/css/utilities.css'  
 import 'virtual:svg-icons-register' //注册svg脚本
 import globalComponent from '@/components/install.js'
 import App from './App.vue'

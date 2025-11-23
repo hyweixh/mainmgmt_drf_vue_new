@@ -2,50 +2,6 @@ import pyodbc
 import firebirdsql
 
 
-# 连接MSSQL数据库的类
-# class Mssql_class(object):
-#     def __init__(self, db_ip, db_name, db_user, db_pw):
-#         self.db_ip = db_ip
-#         self.db_name = db_name
-#         self.db_user = db_user
-#         self.db_pw = db_pw
-#         self.conn = None
-#         self.cursor = None
-#
-#     def connect(self):
-#         try:
-#             conn_str = (
-#                 f'DRIVER=ODBC Driver 18 for SQL Server;'
-#                 f'SERVER={self.db_ip};'
-#                 f'DATABASE={self.db_name};'
-#                 f'UID={self.db_user};'
-#                 f'PWD={self.db_pw};'
-#                 f'TrustServerCertificate=yes;'
-#             )
-#             self.conn = pyodbc.connect(conn_str)
-#             self.cursor = self.conn.cursor()
-#         except Exception as e:
-#             print(f"连接数据库失败: {e}")
-#             raise
-#
-#     def disconnect(self):
-#         if self.cursor:
-#             self.cursor.close()
-#         if self.conn:
-#             self.conn.close()
-#
-#     def execute_query(self, query, params=None):
-#         try:
-#             self.cursor.execute(query, params)  # 使用参数化查询
-#             rows = self.cursor.fetchall()
-#             # print("rows:",rows)
-#             return rows
-#         except pyodbc.Error as e:
-#             print(f"查询数据库时发生错误: {e}")
-#             return None
-
-# 连接Firebird数据库的类
-
 class Mssql_class(object):
     def __init__(self, db_ip, db_name, db_user, db_pw):
         self.db_ip = db_ip
