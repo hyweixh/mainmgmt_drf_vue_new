@@ -53,7 +53,7 @@ const onLaneSoftPSara_frMSSQL = async () => {
 
 async function requestLanesoftparas(firm,page, page_size) {    
     try {
-        let data = await checklanesoftHttp.getlanesoftparasList(firm,page, page_size, filterForm);
+        let data = await checklanesoftHttp.getlanesoftparasList(firm,page, page_size.value, filterForm);
         let lanesoftParasArray = data.results; // 获取结果数组  
         // console.log("data:", lanesoftParasArray); 
         // 将 ISO 8601 字符串转换为日期对象，并找到最大的日期  
@@ -89,8 +89,8 @@ const onSearch = (index) => {
     try {  
         // const confifrmData = await checklanesoftHttp.getlanesoftparasList(1,1, page_size, filterForm);
         // const data = await checklanesoftHttp.getlanesoftparasList(0,1, page_size, filterForm);
-        const confifrmData = await requestLanesoftparas(1,1, page_size);  // 获取已确认的数据
-        const data = await requestLanesoftparas(0,1, page_size);  // 获取未确认的数据
+        const confifrmData = await requestLanesoftparas(1,1, page_size.value);  // 获取已确认的数据
+        const data = await requestLanesoftparas(0,1, page_size.value);  // 获取未确认的数据
         if (data.length === 0){
             maxDate_str='2020-01-01' 
         }
@@ -150,6 +150,7 @@ const onDialogCancel= async () => {
     }  
    
 onMounted(async () => {
+    curr_page.value = 1;  // ✅ 添加初始化
     await requestLanesoftparas(0, 1, page_size.value);
 })
 
@@ -191,7 +192,7 @@ watch(() => filterForm.queryType, (newValue, oldValue) => {
 // 更新故障原因和处理方法
 const onupdateerror_des_proc = async () => {
     // let cur_id = ref(),cur_id，定义为响应式变量，传递参数时需用.value
-    let data = await checklanesoftHttp.update_error_desc_proc(
+    await checklanesoftHttp.update_error_desc_proc(
         cur_id.value, 
         cur_error_des.value,
         cur_error_proc.value);
@@ -211,12 +212,17 @@ const onErrorinfo = (index) => {
     cur_id.value =  lanesoftparas.value[index].id
     cur_stationname.value = lanesoftparas.value[index].tollStationname
     cur_laneno.value = lanesoftparas.value[index].laneno
+
+    // ✅ 补充以下两行代码
+    cur_error_des.value = lanesoftparas.value[index].error_desc || '' // 加载当前错误描述
+    cur_error_proc.value = lanesoftparas.value[index].error_proc || '' // 加载当前异常处理
+    
     dialogVisible.value = true; //显示填写错误信息对话框
 }
 // 显示历史记录
 const onLaneSoftPara_history = async () => {
-    // is_history=true
-    requestLanesoftparas(1,curr_page, page_size.value);
+    is_history.value=true
+    requestLanesoftparas(1,curr_page.value, page_size.value);
 }
 
 const export_excels = async () =>{    
@@ -447,7 +453,7 @@ const onDownload = async () => {
                 <el-table-column prop="error_proc" label="错误处理" width="120"></el-table-column>
                 <el-table-column label="操作" v-if="!is_history">
                     <template #default="scope">
-                        <el-button type="primary" icon="-edit" circle @click="onErrorinfo(scope.$index)">
+                        <el-button  v-permission="'checklanesoft:edit'" type="primary" icon="-edit" circle @click="onErrorinfo(scope.$index)">
                         </el-button>
                     </template>
                 </el-table-column>

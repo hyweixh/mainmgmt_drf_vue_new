@@ -2,7 +2,13 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from dotenv import load_dotenv
 
+# ✅ 在Django设置之前加载.env
+load_dotenv()
+
+# 打印验证（可选）
+#print(f"✅ manage.py中DJANGO_ENV: {os.getenv('DJANGO_ENV')}")
 
 def main():
     """Run administrative tasks."""

@@ -11,10 +11,23 @@ from rest_framework.response import Response
 from utils.databaseclass import Mssql_class
 from rest_framework.views import APIView
 from utils.export_excels import ExcelExporter
+from auth.rbac.permissions.drf import CustomPermissionMixin  # ✅ 引入权限类
 
 class ChecklanesoftViewSet(viewsets.ModelViewSet):
-    queryset = Checklanesoft.objects.all().order_by('stationno','laneno')
+    queryset = Checklanesoft.objects.all().order_by('stationno', 'laneno')
     serializer_class = ChecklanesoftSerializer
+
+    # ✅ 添加权限控制
+    permission_classes = [CustomPermissionMixin]
+
+    # ✅ 只配置list权限，其他操作（create/update/destroy）不配置
+    permission_code_map = {
+        'list': {'code': 'checklanesoft:view', 'message': '您没有查看车道软件参数的权限'},
+        'partial_update': {'code': 'checklanesoft:edit', 'message': '您没有编辑权限'},  # 新增此行
+        # 'create': {...}  # 不配置 = 默认放行（当前开发环境策略）
+        # 'update': {...}  # 不配置 = 默认放行
+        # 'destroy': {...} # 不配置 = 默认放行
+    }
 
     def get_queryset(self):
         selectType = self.request.query_params.get('queryType')

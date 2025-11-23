@@ -5,15 +5,15 @@ from rest_framework.exceptions import *
 
 
 class CustomPermissionDenied(APIException):
-    """
+    """"
     自定义权限异常类
     用于在权限检查失败时抛出标准化的403错误响应
     """
     status_code = 403  # HTTP状态码：禁止访问
 
     def __init__(self, message):
-        # 将错误信息封装为统一的message格式，便于前端统一处理
-        self.detail = {"message": message}
+        # ✅ 正确调用父类初始化，确保DRF能正确处理
+        super().__init__(detail={"message": message})
 
 
 class CustomPermissionMixin(BasePermission):
@@ -62,19 +62,18 @@ class CustomPermissionMixin(BasePermission):
             required_permission_code = permission_info.get('code')
             # 优先使用配置中的自定义消息，提升用户体验
             custom_message = permission_info.get('message', "您没有执行该操作的权限")
-
         else:
-            # 未配置时的统一处理（只能有一条语句）
-            # 选下面三种之一：
 
-            # A. 抛出自定义异常（推荐）
-            # raise CustomPermissionDenied(message=f"操作'{action}'未配置权限码")
+            # ✅ 生产环境安全策略：未配置 = 拒绝
+            import os
+            # 开发环境临时放行
+            if os.getenv('DJANGO_ENV') == 'development':
+                return True
 
-            # B. 返回False（不推荐，因为错误信息不明确）
-            # return False
-
-            # C. 开发环境临时放行（必须加环境判断）
-            return True
+            # 生产环境抛异常
+            raise CustomPermissionDenied(
+                message=f"操作'{action}'未配置权限码，请联系管理员"
+            )
 
 
         # 4. 查询当前用户的所有角色ID

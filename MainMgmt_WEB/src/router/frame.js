@@ -6,15 +6,16 @@ import role from '@/views/auth/roleInfo/roleInfo.vue';
 import menu from '@/views/auth/menuInfo/menuInfo.vue';
 import Forbidden from '@/views/error/401.vue';
 import requestLog from '@/views/auth/requestLog/requestLog.vue';
-import deviceList from '@/views/devicemgmt/list.vue';  // ✅ 导入设备列表
+import deviceList from '@/views/devicemgmt/list.vue';
 import devicemgmt_add from '@/views/devicemgmt/add.vue';
-import devicemgmt_edit from '@/views/devicemgmt/edit.vue'; 
+import devicemgmt_edit from '@/views/devicemgmt/edit.vue';
 import checklanesoftList from '@/views/checklanesoft/checklanesoft_list.vue';
-import VehlossrateList from '@/views/vehlossrate/vehlossrate_list.vue'
-import vehlossrate_disppic from '@/views/vehlossrate/vehlossrate_disppic.vue'
-import holidayfreelist from '@/views/holidayfree/holidayfree_list.vue'
-import lanepsaminfolist from '@/views/lanepsaminfo/lanepsaminfo_list.vue'
-import gantrypsaminfolist from '@/views/gantrypsaminfo/gantrypsaminfo_list.vue'
+import VehlossrateList from '@/views/vehlossrate/vehlossrate_list.vue';
+import vehlossrate_disppic from '@/views/vehlossrate/vehlossrate_disppic.vue';
+import holidayfreelist from '@/views/holidayfree/holidayfree_list.vue';
+import lanepsaminfolist from '@/views/lanepsaminfo/lanepsaminfo_list.vue';
+import gantrypsaminfolist from '@/views/gantrypsaminfo/gantrypsaminfo_list.vue';
+
 const routes = [
   {
     path: '/',
@@ -39,42 +40,40 @@ const routes = [
             path: 'list',
             name: 'devicemgmt_list',
             component: deviceList,
-            meta: { text: '设备列表', icon: 'server' }
+            meta: { text: '设备列表', icon: 'server', permission: 'devices:view' }
           },
           {
-            path: 'devices',  // ✅ 相对路径
+            path: 'devices',
             name: 'devicemgmt_add',
             component: devicemgmt_add,
             meta: { 
               text: '添加设备信息',
-              permission: 'devices:add'  // ✅ 必须放在 meta 内部
+              permission: 'devices:add'
             },
             props: true
-          },  
+          },
           {
-            path: 'devices/:id',  // ✅ 相对路径
+            path: 'devices/:id',
             name: 'devicemgmt_edit',
             component: devicemgmt_edit,
             meta: { 
               text: '编辑设备信息',
-              permission: 'devices:edit'  // ✅ 必须放在 meta 内部
-            },            
+              permission: 'devices:edit'
+            },
             props: true
           },
           {
-            path: 'upload',  // ✅ 相对路径
+            path: 'upload',
             name: 'devices-upload',
-            // component: devicemgmt_edit,
             meta: { 
               text: '批量上传',
-              permission: 'devices:upload'  // ✅ 必须放在 meta 内部
-            },            
+              permission: 'devices:upload'
+            },
             props: true
           }
-          
         ]
       },
-      // 车道软件检查菜单
+      // 收费系统菜单
       {
         path: '/checklanesoft',
         name: 'checklanesoft',
@@ -85,10 +84,13 @@ const routes = [
             path: 'list',
             name: 'checklanesoft_list',
             component: checklanesoftList,
-            meta: { text: '车道软件信息', icon: 'server' }
-            
-          },   
- 
+            meta: { text: '车道软件信息', icon: 'server', permission: 'checklanesoft:view' }
+          },
+          {
+            path: '/api/checklanesoft/checklanesoft/:id',
+            name: 'checklanesoft_edit',            
+            meta: { text: '编辑故障信息', icon: 'server', permission: 'checklanesoft:edit' }
+          }
         ]
       },
       // 车牌识别率菜单
@@ -102,18 +104,17 @@ const routes = [
             path: 'list',
             name: 'vehlossrate_list',
             component: VehlossrateList,
-            meta: { text: '车牌识别列表', icon: 'server' }            
-          },   
+            meta: { text: '车牌识别列表', icon: 'server', permission: 'vehlossrate:view' }
+          },
           {
-            path: 'disppic',  // ✅ 建议同步修改路径，保持一致性
-            name: 'vehlossrate_disppic',  // ✅ 改为与跳转名称一致
+            path: 'disppic',
+            name: 'vehlossrate_disppic',
             component: vehlossrate_disppic,
             meta: { 
-              text: '获取车辆图像', 
-              // icon: 'server' ,  
-              permission: 'vehlossrate:getimageurl' 
-            }       
-          },   
+              text: '获取车辆图像',
+              permission: 'vehlossrate:getimageurl'
+            }
+          }
         ]
       },
       // 节假日免费参数
@@ -127,8 +128,8 @@ const routes = [
             path: 'list',
             name: 'holidayfree_list',
             component: holidayfreelist,
-            meta: { text: '节假日免费参数', icon: 'server' }            
-          },       
+            meta: { text: '节假日免费参数', icon: 'server', permission: 'holidayfree:view' }
+          }
         ]
       },
       // 车道psam卡信息
@@ -142,39 +143,32 @@ const routes = [
             path: 'list',
             name: 'lanepsaminfo_list',
             component: lanepsaminfolist,
-            meta: { text: '车道psam卡信息', icon: 'server' }            
-          },     
+            meta: { text: '车道psam卡信息', icon: 'server', permission: 'lanepsaminfo:view' }
+          },
           {
-            path: '/getlanepsaminfo',
+            path: 'getpsam',
             name: 'getlanepsaminfo',
-            // component: ,
             meta: { 
-              text: '获取车道psam卡信息', 
-              // icon: 'server' ,
-              permission: 'lanepsaminfo:getpsam' 
-            }            
-          },   
+              text: '获取车道psam卡信息',
+              permission: 'lanepsaminfo:getpsam'
+            }
+          },
           {
-            path: '/lanepsaminfo/:psamno',
+            path: 'edit/:psamno',
             name: 'editLanepsam',
-            // component: ,
             meta: { 
-              text: '编辑psam卡信息', 
-              // icon: 'server' ,
-             permission: 'lanepsaminfo:edit' 
-            }            
-          },       
-          // 下载车道psam卡信息
+              text: '编辑psam卡信息',
+              permission: 'lanepsaminfo:edit'
+            }
+          },
           {
-            path: '/lanepsaminfo/download',
+            path: 'download',
             name: 'downloadLanepsam',
-            // component: ,
             meta: { 
-              text: '下载psam卡信息', 
-              // icon: 'server' ,
+              text: '下载psam卡信息',
               permission: 'lanepsaminfo:download'
-            }            
-          },     
+            }
+          }
         ]
       },
       // 门架psam卡信息
@@ -188,39 +182,32 @@ const routes = [
             path: 'list',
             name: 'gantrypsaminfo_list',
             component: gantrypsaminfolist,
-            meta: { text: '门架psam卡信息', icon: 'server' }            
-          },     
+            meta: { text: '门架psam卡信息', icon: 'server', permission: 'gantrypsaminfo:view' }
+          },
           {
-            path: '/getlanepsaminfo',
-            name: 'getlanepsaminfo',
-            // component: ,
+            path: 'getpsam',
+            name: 'getgantrypsaminfo',
             meta: { 
-              text: '获取车道psam卡信息', 
-              // icon: 'server' ,
-              permission: 'lanepsaminfo:getpsam' 
-            }            
-          },   
+              text: '获取门架psam卡信息',
+              permission: 'gantrypsaminfo:getpsam'
+            }
+          },
           {
-            path: '/lanepsaminfo/:psamno',
-            name: 'editLanepsam',
-            // component: ,
+            path: 'edit/:psamno',
+            name: 'editGantrypsam',
             meta: { 
-              text: '编辑psam卡信息', 
-              // icon: 'server' ,
-             permission: 'lanepsaminfo:edit' 
-            }            
-          },       
-          // 下载车道psam卡信息
+              text: '编辑门架psam卡信息',
+              permission: 'gantrypsaminfo:edit'
+            }
+          },
           {
-            path: '/lanepsaminfo/download',
-            name: 'downloadLanepsam',
-            // component: ,
+            path: 'download',
+            name: 'downloadGantrypsam',
             meta: { 
-              text: '下载psam卡信息', 
-              // icon: 'server' ,
-              permission: 'lanepsaminfo:download'
-            }            
-          },     
+              text: '下载门架psam卡信息',
+              permission: 'gantrypsaminfo:download'
+            }
+          }
         ]
       },
       // 系统管理菜单
@@ -228,24 +215,42 @@ const routes = [
         path: '/sys',
         name: 'sys',
         component: sys,
+        meta: { text: '系统管理', icon: 'setting' },
         children: [
-          { path: 'user', name: 'user', component: user },
-          { path: 'role', name: 'role', component: role },
-          { path: 'menu', name: 'menu', component: menu },
-          { path: 'requestLog', name: 'requestLog', component: requestLog, meta: { text: '审计日志', icon: 'Redis' } }
+          { 
+            path: 'user', 
+            name: 'user', 
+            component: user,
+            meta: { text: '用户管理', permission: 'user:list' }
+          },
+          { 
+            path: 'role', 
+            name: 'role', 
+            component: role,
+            meta: { text: '角色管理', permission: 'role:list' }
+          },
+          { 
+            path: 'menu', 
+            name: 'menu', 
+            component: menu,
+            meta: { text: '菜单管理', permission: 'menu:list' }
+          },
+          { 
+            path: 'requestLog', 
+            name: 'requestLog', 
+            component: requestLog, 
+            meta: { text: '审计日志', icon: 'Redis' }
+            // 注意：requestLog 在提供的权限列表中没有对应权限项
+          }
         ]
       },
-      { path: '/Forbidden', name: 'Forbidden', component: Forbidden }
+      { 
+        path: '/Forbidden', 
+        name: 'Forbidden', 
+        component: Forbidden 
+      }
     ]
   }
 ];
 
 export default routes;
-
-// 以下是调试信息
-// frame.js 最底部
-// console.log('📦 路由配置检查');
-// const devicemgmtRoute = routes[0].children.find(r => r.name === 'devicemgmt');
-// const addRoute = devicemgmtRoute?.children?.find(c => c.name === 'devicemgmt_add');
-// console.log('devicemgmt_add 路由对象:', addRoute);
-// console.log('meta.permission 值:', addRoute?.meta?.permission);

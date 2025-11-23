@@ -3,6 +3,12 @@ import os
 import environ
 from pathlib import Path
 
+# 加载.env文件
+# load_dotenv()  # 或 load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+# 验证加载
+print(f"当前环境: {os.getenv('DJANGO_ENV')}")  # 应打印 "development"
+
 # 读取.env文件，在服务器项目的根路径上要创建一个
 env = environ.Env()
 BASE_DIR = Path(__file__).resolve().parent.parent

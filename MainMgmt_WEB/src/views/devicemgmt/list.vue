@@ -329,6 +329,7 @@ const onUploadFail = (error) => {
                 <el-col :span="8" class="d-flex justify-content-start">
                     <!-- <el-button class="button_r" type="primary" icon="plus" @click="navigateToAddDevice">新增设备</el-button> -->
                     <el-button 
+                        v-permission="'devices:add'"
                         class="button_r" 
                         type="primary"
                         icon="Plus"
@@ -336,18 +337,20 @@ const onUploadFail = (error) => {
                         新增设备
                     </el-button>
                     <el-form-item>
-                        <el-upload 
-                            @click="$router.push('/api/devicemgmt/upload')"
-                            :headers="uploadHeaders"  
-                            :on-success="onUploadSuccess"
-                            :on-error="onUploadFail" 
-                            :show-file-list="false" 
-                            :auto-upload="true" accept=".xlsx">
-                            <el-button class="button_r" type="primary" icon="Upload">批量上传</el-button>
-                        </el-upload>
-                    </el-form-item>
+                <el-upload
+                    v-permission="'devices:upload'"
+                    action="/api/devicemgmt/upload"
+                    :headers="uploadHeaders"
+                    :on-success="onUploadSuccess"
+                    :on-error="onUploadFail"
+                    :show-file-list="false"
+                    :auto-upload="true"
+                    accept=".xlsx">
+                    <el-button class="button_r" type="primary" icon="Upload">批量上传</el-button>
+                </el-upload>
+                </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" icon="Download" @click="export_deviceinfo">导出设备</el-button>
+                        <el-button v-permission="'devices:download'" type="primary" icon="Download" @click="export_deviceinfo">导出设备</el-button>
                     </el-form-item>
                 </el-col>
                 <el-col :span="16" class="d-flex justify-content-end">
@@ -412,12 +415,12 @@ const onUploadFail = (error) => {
                 <!-- <el-table-column prop="mem" label="备注" class-name="ellipsis-column"></el-table-column> -->
                 <el-table-column label="操作">
                     <template #default="scope">
-                        <el-button type="primary" icon="Edit" circle @click="onEditDeviceInfo(scope.$index)">
+                        <el-button v-permission="'devices:edit'" type="primary" icon="Edit" circle @click="onEditDeviceInfo(scope.$index)">
                         </el-button>
                         <el-button type="primary" icon="document-copy" circle
                             @click="onShowCopyPwdDialog(scope.$index)">
                         </el-button>
-                        <el-button type="danger" icon="Delete" circle @click="onShowDialog(scope.$index)"></el-button>
+                        <el-button v-permission="'role:delete'" type="danger" icon="Delete" circle @click="onShowDialog(scope.$index)"></el-button>
 
                     </template>
 
