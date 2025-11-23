@@ -80,7 +80,7 @@ class opsUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["password"]
 
     class Meta:
-        # db_table = "sys_user"
+        db_table = "sys_user"
         ordering = ("-last_login", )   # 根据date_joined倒叙排列
 
 
@@ -101,3 +101,6 @@ class RequestLog(models.Model):
 
     def __str__(self):
         return f"{self.timestamp} {self.client_ip} {self.user_info} {self.method} {self.path}"
+    class Meta:
+        db_table = "sys_requestLog"
+        ordering = ("-timestamp", )   # 根据timestamp倒叙排列
