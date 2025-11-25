@@ -187,6 +187,7 @@ class DeviceinfoUploadView(APIView):
     """
     # ✅ 添加权限验证
     permission_classes = [CustomPermissionMixin]
+    # permission_classes = [AllowAny]
 
     # ✅ 为自定义POST方法配置权限
     permission_code_map = {
