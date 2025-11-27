@@ -133,8 +133,7 @@ const downloadDeviceinfos = (token, pks = []) => {
         url: `${BASE_PATH}/devices/export`,
         responseType: 'blob',
         headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',  
+            'Authorization': `Bearer ${token}`,            
         }
     };
     

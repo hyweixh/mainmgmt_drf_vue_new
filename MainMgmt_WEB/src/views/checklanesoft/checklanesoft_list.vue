@@ -386,7 +386,7 @@ const onDownload = async () => {
                     <el-button type="primary" icon="download" class="ml-10" @click="export_excels">导出到Excel</el-button>
                 </el-col>
                 <el-col :span="16" class="d-flex justify-content-end">
-                    <el-form-item label="查询类型" label-width="110px" class="form-item-cente">
+                    <el-form-item label="查询类型" label-width="110px" class="form-item-centmr-20 ml-20 font-size-16">
                         <el-select v-model="filterForm.queryType" placeholder="请选择查询类型" class="select_with">
                             <el-option label="OBU黑名单" value="obublacklistversion"></el-option>
                             <el-option label="最小费率" value="spcrateversion"></el-option>
@@ -395,7 +395,7 @@ const onDownload = async () => {
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="查询条件" label-width="110px" class="form-item-cente">
+                    <el-form-item label="查询条件" label-width="110px" class="form-item-centmr-20 ml-20 font-size-16">
                         <el-select v-model="filterForm.queryCondition" placeholder="请选择条件" class=select_with>
                             <el-option v-for="condition in queryConditions" :key="condition" :label="condition"
                                 :value="condition">

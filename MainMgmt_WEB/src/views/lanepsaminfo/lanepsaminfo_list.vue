@@ -9,6 +9,7 @@ import timeFormatter from "@/utils/timeFormatter"
 import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router"; 
 import { showLoading, hideLoading } from '@/utils/loading';
+//import '@/assets/css/utilities.css'
 
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
@@ -181,15 +182,15 @@ const export_excels = async () => {
                     <el-button type="primary" icon="download" class="ml-10" @click="export_excels">导出到Excel</el-button>
                 </el-col>
                 <el-col :span="16" class="d-flex justify-content-end">
-                    <el-form-item label="按站编号" label-width="100px">
+                    <el-form-item class="mr-20 font-size-16" label="按站编号" label-width="100px">
                         <el-input  v-number-only v-model="filterForm.stationno" />
                     </el-form-item>
-                    <el-form-item label="按卡号" label-width="100px">                        
+                    <el-form-item class="mr-20 font-size-16" label="按卡号" label-width="100px">                        
                         <el-input 
                             v-model="filterForm.psamno"                              
                             />
                     </el-form-item>
-                    <el-form-item label="按卡状态">
+                    <el-form-item class="mr-20 font-size-16" label="按卡状态">
                         <el-select v-model="filterForm.psamstatus_id" placeholder="请选择卡状态" class=select_with>
                             <el-option v-for="p_tatus in psamstatuses" :key="p_tatus.id" :label="p_tatus.psamstatus"
                                 :value="p_tatus.id" />

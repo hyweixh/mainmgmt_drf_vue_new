@@ -120,18 +120,19 @@ function isStartTimeBeforeTenDaysAgo(startTime) {
     <HYMain title="节假日免费参数" style="margin-top: 10px;">
         <el-card class="custom-card">
         <el-row type="flex" align="middle">
-            <el-col :span="8" class="d-flex justify-content-start align-items-center">
+            <el-col :span="6" class="d-flex justify-content-start align-items-center" >
                 <el-button type="primary" icon="plus" @click="onholidayfree_update">更新</el-button>
-                <el-button type="primary" icon="plus" @click="onShowConfirmDialog">确认</el-button>
+                <!-- <el-button type="primary" icon="plus" @click="onShowConfirmDialog">确认</el-button> -->
             </el-col>
-            <el-col :span="16" class="d-flex justify-content-end align-items-center">
-                <el-form-item label="按检查结果" label-width="100px" class="form-item-center">
+            <el-col :span="18" class="d-flex justify-content-end align-items-center" >
+                <el-form-item label="按检查结果" label-width="100px" class="mr-20 font-size-16" 
+                    style="white-space: nowrap; flex-shrink: 0;">    
                     <el-select v-model="filterForm.inspectresult" placeholder="请选择检查结果" class="select_with">
                         <el-option label="获取成功" value="获取成功"></el-option>
                         <el-option label="获取失败" value="获取失败"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="按开始日期" label-width="100px"  class="form-item-center">
+                <el-form-item label="按开始日期" label-width="100px"  class="mr-20 font-size-14">
                     <el-input v-model="filterForm.starttime" placeholder="开始日期时间(2024-10-01)" class="select_with"></el-input>
                 </el-form-item>
             <el-button type="primary" icon="Search" @click="onSearch"></el-button>
@@ -147,9 +148,9 @@ function isStartTimeBeforeTenDaysAgo(startTime) {
                     <!-- $index + 1：序号从1开始 -->
                     <template #default="scope">{{ scope.$index + 1 }}</template>
                 </el-table-column>
-                <el-table-column prop="tollid" label="收费单元编号" width="200"></el-table-column>
-                <el-table-column prop="stationno" label="站编码" width="70"></el-table-column>
-                <el-table-column prop="laneno" label="车道编码" width="80"></el-table-column>
+                <!-- <el-table-column prop="tollid" label="收费单元编号" width="200"></el-table-column> -->
+                <el-table-column prop="stationno" label="站编码" width="100"></el-table-column>
+                <el-table-column prop="laneno" label="车道编码" width="100"></el-table-column>
                 <el-table-column prop="lanecomputerip" label="车道IP" width="130"></el-table-column>
                 <el-table-column prop="lanetype" label="车道类型" width="120"></el-table-column>
 
@@ -170,6 +171,7 @@ function isStartTimeBeforeTenDaysAgo(startTime) {
                         </span>
                     </template>
                 </el-table-column>
+                
                 <el-table-column prop="overtime" label="结束时间" width="180">
                     <template #default="scope">
                         <span :style="{
@@ -209,6 +211,9 @@ function isStartTimeBeforeTenDaysAgo(startTime) {
 </template>
 
 <style scoped>
+    .select_with {
+        width: 180px;  /* 两个控件宽度一致 */
+    }
     /* 卡片内边距样式 */
     .custom-card :deep(.el-card__body) {
     padding-top: 15px;

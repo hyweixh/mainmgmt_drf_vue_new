@@ -65,7 +65,7 @@ onMounted(async () => {
 
 // 监听分页是否有变化  
 watch(() => pagination.page, async function (newPage) {
-    curr_page = newPage;
+    curr_page.value = newPage;
     requestgantrypsaminfos(newPage, page_size.value);
 });
 
@@ -84,17 +84,19 @@ const onSearch = (index) => {
 }
 
 const onShowDialog = (index) => {
-    cur_pasamno = gantrypsaminfos.value[index].psamno
+    cur_pasamno.value = gantrypsaminfos.value[index].psamno
     handleIndex = index
+    cur_mem.value = gantrypsaminfos.value[index].mem    
+    
     // cur_mem = gantrypsaminfos.value[index].mem    
     dialogVisible.value = true; //显示修改psam卡状态对话框
 }
 // 修改psam卡状态
 const onupdatePsamstatus = async () => {
-    console.log("cur_psamno is ",cur_pasamno)
-    let data = await gantrypsaminfoHttp.editgantrypsam(cur_pasamno, cur_mem);
+    // console.log("cur_psamno is ",cur_pasamno.value)
+    let data = await gantrypsaminfoHttp.editgantrypsam(cur_pasamno.value, cur_mem);
     // 
-    ElMessage.success(cur_pasamno + "修改成功")
+    ElMessage.success(cur_pasamno.value + "修改成功")
     dialogVisible.value = false;
     // router.push({ name: 'gantrypsaminfo_list', });
     requestgantrypsaminfos(curr_page, page_size.value);
@@ -154,13 +156,13 @@ const export_excels = async () =>{
                     <el-button type="primary" icon="download" class="ml-10" @click="export_excels">导出到Excel</el-button>
                 </el-col>
                 <el-col :span="16" class="d-flex justify-content-end">
-                    <el-form-item label="按桩号" label-width="100px">
+                    <el-form-item class="mr-20 font-size-16" label="按桩号" label-width="100px">
                         <el-input v-model="filterForm.pilenumber" />
                     </el-form-item>
-                    <el-form-item label="按卡号" label-width="100px">
+                    <el-form-item class="mr-20 font-size-16" label="按卡号" label-width="100px">
                         <el-input v-model="filterForm.psamno" />
                     </el-form-item>
-                    <el-form-item label="按卡状态">
+                    <el-form-item class="mr-20 font-size-16" label="按卡状态">
                         <el-select v-model="filterForm.statusName" placeholder="请选择卡状态" class=select_with>
                             <el-option label="正常" value="正常"></el-option>
                             <el-option label="未授权" value="未授权"></el-option>

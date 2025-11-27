@@ -88,6 +88,7 @@ DATABASES = {
         'OPTIONS': {
             # MySQL 8.0 推荐SQL模式
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+            # 'init_command': "SET time_zone = '+08:00'",  # 可选：设置MySQL会话时区
 
             # 字符集（确保表也使用utf8mb4）
             'charset': 'utf8mb4',
@@ -135,7 +136,7 @@ ROOT_URLCONF = 'mainmgmt.urls'  # 全局 URL 路由配置
 WSGI_APPLICATION = 'mainmgmt.wsgi.application'  # 连接入口
 LANGUAGE_CODE = 'zh-hans'  # 语言编码
 USE_I18N = True     # 国际化
-USE_TZ = True       # 使用时区
+USE_TZ = True      # 使用时区
 TIME_ZONE = 'Asia/Shanghai'     # 时区
 STATIC_URL = 'static/'         # 静态文件前缀
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'    # 模型AutoField的默认类型
@@ -277,4 +278,8 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+# 设备导出用Bearer，是否起作用
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('Bearer', 'JWT'),  # ✅ 同时支持两种格式
 }

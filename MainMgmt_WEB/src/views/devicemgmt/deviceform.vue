@@ -1,152 +1,248 @@
-<script setup name="deviceform">
-import OAMain from '@/components/HYMain.vue';
-// import OADialog from '@/components/OADialog.vue';
-import { ref, reactive, onBeforeUnmount, shallowRef, onMounted } from "vue"
-// import '@wangeditor/editor/dist/css/style.css' // 引入 css
-// import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
-import deviceinfoHttp from '@/api/devicemgmtHttp';
+<!-- 新增设备和编辑设备公用一个form -->
+<script setup name="devicemgmt_form">
+import devicemgmtHttp from "@/api/devicemgmtHttp";
+import { ref, reactive, onMounted, computed } from "vue"
 import { ElMessage } from "element-plus"
-// import { useAuthStore } from '@/stores/auth';
-// import informHttp from '@/api/informHttp';
+import HYMain from "@/components/HYMain.vue"
+import { useRoute, useRouter } from "vue-router";
 
-const authStore = useAuthStore()
+const route = useRoute();
+const router = useRouter();
 
-let deviceForm = reactive({
-    title: '',
-    content: '',
-    department_ids: []
-})
+// 模式判断：/device/form/add 或 /device/form/edit/:id
+const isEdit = computed(() => route.params.mode === 'edit');
+const pageTitle = computed(() => isEdit.value ? '编辑设备' : '新增设备');
+
+const labelPosition = 'right';
+const inputWidth = 10;
+
+// 表单定义
+let deviceinfoForm = reactive({
+  deviceip: "",
+  devicename: "",
+  position: "",
+  devicemanufacture: "",
+  unittype: "",
+  deviceserialnumber: "",
+  user1: "",
+  pwd1: "",
+  user2: "",
+  pwd2: "",
+  user3: "",
+  pwd3: "",
+  user4: "",
+  pwd4: "",
+  mem: "",
+  create_time: "",
+  devicetype_id: "",
+  subnetwork_id: ""
+});
+
+// 下拉选项
+let devicetypes = ref([])
+let subnettypes = ref([])
+
+// 验证规则
+const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const rules = reactive({
-    title: [{ required: true, message: "请输入标题！", trigger: 'blur' }],
-    content: [{ required: true, message: "请输入内容！", trigger: 'blur' }],
-    department_ids: [{ required: true, message: "请选择部门！", trigger: 'change' }]
-})
-let formRef = ref()
-let formLabelWidth = "100px"
-let departments = ref([])
-
-////////////// 这是跟wangEditor相关的配置 //////////////
-// 编辑器实例，必须用 shallowRef
-const editorRef = shallowRef()
-
-const toolbarConfig = {}
-const editorConfig = {
-    placeholder: '请输入内容...',
-    MENU_CONF: {
-        uploadImage: {
-            // http://localhost:5173/image/upload
-            // http://localhost:8000/image/upload
-            server: import.meta.env.VITE_BASE_URL + '/image/upload',
-            fieldName: 'image', //接收图片的字段
-            maxFileSize: 0.5 * 1024 * 1024, //图片大小，与后端一至
-            maxNumberOfFiles: 10,
-            allowedFileTypes: ['image/*'],
-            headers: {
-                Authorization: "JWT " + authStore.token  //JWT后面+空格
-            },
-            timeout: 6 * 1000, // 6 秒,
-            customInsert(res, insertFn) {
-                if(res.errno == 0){
-                    // res 即服务端的返回结果
-                    let data = res.data;
-                    let url = import.meta.env.VITE_BASE_URL + data.url
-                    let href = import.meta.env.VITE_BASE_URL + data.href
-                    let alt = data.alt;
-                    // 从 res 中找到 url alt href ，然后插入图片
-                    insertFn(url, alt, href)
-                }else{
-                    ElMessage.error(res.message)
-                }
-            },
-            // 单个文件上传失败
-            onFailed(file, res) {
-                console.log(`${file.name} 上传失败`, res)
-            },
-
-            // 上传错误，或者触发 timeout 超时
-            onError(file, err, res) {
-                if(file.size > 0.5*1024*1024){
-                    ElMessage.error('图片文件最大不能超过0.5MB!')
-                }else{
-                    ElMessage.error('图片格式不正确！')
-                }
-            },
-        }
-    }
-}
-// editorConfig.MENU_CONF['uploadImage']
-let mode = "default"
-
-// 组件销毁时，也及时销毁编辑器
-onBeforeUnmount(() => {
-    const editor = editorRef.value
-    if (editor == null) return
-    editor.destroy()
+  deviceip: [
+    { required: true, message: "请输入IP!", trigger: 'blur' },
+    { pattern: ipRegex, message: '请输入正确的IP地址！', trigger: 'blur' }
+  ],
+  devicename: [{ required: true, message: "请输入设备名称！", trigger: 'blur' }],
+  devicetype_id: [{ required: true, message: "请选择设备类型！", trigger: 'change' }],
+  position: [{ required: true, message: "请输入安装位置！", trigger: 'blur' }],
+  subnetwork_id: [{ required: true, message: "请选择子网类型！", trigger: 'change' }],
 })
 
-const handleCreated = (editor) => {
-    editorRef.value = editor // 记录 editor 实例，重要！
-}
-////////////// 这是跟wangEditor相关的配置 //////////////
+const formRef = ref()
 
+// 加载数据
 onMounted(async () => {
-    try {
-        let data = await staffHttp.getAllDepartment()
-        departments.value = data.results
-    } catch (detail) {
-        ElMessage.error(detail)
+  try {
+    // 并行加载下拉选项
+    const [devicetypeData, subnettypeData] = await Promise.all([
+      devicemgmtHttp.getDeviceType(),
+      devicemgmtHttp.getSubnetType()
+    ]);
+    devicetypes.value = devicetypeData;
+    subnettypes.value = subnettypeData;
+
+    // 编辑模式：加载设备详情
+    if (isEdit.value) {
+      const deviceId = route.params.id;
+      if (!deviceId) {
+        ElMessage.error('缺少设备ID');
+        return;
+      }
+      
+      const res = await devicemgmtHttp.getDeviceDetail(deviceId);
+      
+      // 合并基础数据
+      Object.assign(deviceinfoForm, res);
+      
+      // 处理密码字段（假设后端返回 pwd1_clear 等明文字段）
+      deviceinfoForm.pwd1 = res.pwd1_clear || '';
+      deviceinfoForm.pwd2 = res.pwd2_clear || '';
+      deviceinfoForm.pwd3 = res.pwd3_clear || '';
+      deviceinfoForm.pwd4 = res.pwd4_clear || '';
+      
+      // 设置外键ID
+      deviceinfoForm.devicetype_id = res.devicetype?.id || '';
+      deviceinfoForm.subnetwork_id = res.subnetwork?.id || '';
     }
-})
+  } catch (error) {
+    console.error("加载失败：", error);
+    ElMessage.error(error.message || "加载失败");
+  }
+});
 
-// 发布通知提交按钮功能
-const onSubmit = () => {
-    formRef.value.validate(async (valid, fields) => {
-        if (valid) {
-            console.log(informForm);
-            try{
-                let data = await informHttp.publishInform(informForm)
-                console.log(data);
-            }catch(detail){
-                ElMessage.error(detail)
-            }
-        }
-    })
-}
+// 提交处理
+const onSubmit = async () => {
+  const valid = await formRef.value.validate().catch(() => false);
+  if (!valid) return;
 
+  try {
+    const payload = { ...deviceinfoForm };
+    
+    if (isEdit.value) {
+      // 编辑模式：需要传递ID
+      await devicemgmtHttp.editDeviceinfo(route.params.id, payload);
+      ElMessage.success('更新成功！');
+    } else {
+      // 新增模式
+      await devicemgmtHttp.addDeviceinfo(payload);
+      ElMessage.success('添加设备成功！');
+    }
+    
+    router.back();
+  } catch (error) {
+    console.error("提交失败：", error);
+    ElMessage.error(error.message || (isEdit.value ? "更新失败" : "添加失败"));
+  }
+};
+
+// 取消
+const onCancel = () => {
+  router.back();
+};
 </script>
 
 <template>
-    <OAMain title="添加设备">
-        <el-card>
-            <el-form :model="informForm" :rules="rules" ref="formRef">
-                <el-form-item label="标题" :label-width="formLabelWidth" prop="title">
-                    <el-input v-model="informForm.title" autocomplete="off" />
-                </el-form-item>
-                <el-form-item label="部门可见" :label-width="formLabelWidth" prop="department_ids">
-                    <!-- multiple 选择多个部门 -->
-                    <el-select multiple v-model="informForm.department_ids">
-                        <el-option :value="0" label="所有部门"></el-option>
-                        <el-option v-for="department in departments" :label="department.name" :value="department.id"
-                            :key="department.name" />
-                    </el-select>
-                </el-form-item> 
-                <el-form-item label="内容" :label-width="formLabelWidth" prop="content">
-                    <div style="border: 1px solid #ccc; width: 100%;">
-                        <Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef"
-                            :defaultConfig="toolbarConfig" :mode="mode" />
-                        <Editor style="height: 500px; overflow-y: hidden;" v-model="informForm.content"
-                            :defaultConfig="editorConfig" :mode="mode" @onCreated="handleCreated" />
-                    </div>
-                </el-form-item>
-                <el-form-item>
-                    <!-- flex: 1;占父盒子的100%宽度 -->
-                    <div style="text-align: right; flex: 1;">
-                        <el-button type="primary" @click="onSubmit">提交</el-button>
-                    </div>
-                </el-form-item>
-            </el-form>
-        </el-card>
-    </OAMain>
+  <HYMain :title="pageTitle">
+    <el-card>
+      <el-form 
+        :label-position="labelPosition" 
+        label-width="100px" 
+        :rules="rules" 
+        :model="deviceinfoForm"
+        ref="formRef" 
+        class="flex-form"
+      >
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="设备名称" prop="devicename">
+              <el-input v-model="deviceinfoForm.devicename" placeholder="请输入设备名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="设备类型" prop="devicetype_id">
+              <el-select v-model="deviceinfoForm.devicetype_id" placeholder="请选择设备类型">
+                <el-option 
+                  v-for="type in devicetypes" 
+                  :key="type.id" 
+                  :label="type.devicetypename"
+                  :value="type.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="安装位置" prop="position">
+              <el-input v-model="deviceinfoForm.position" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="设备IP" prop="deviceip">
+              <el-input v-model="deviceinfoForm.deviceip" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="所属子网" prop="subnetwork_id">
+              <el-select v-model="deviceinfoForm.subnetwork_id" placeholder="请选择子网类型">
+                <el-option 
+                  v-for="type in subnettypes" 
+                  :key="type.id" 
+                  :label="type.subnettypename"
+                  :value="type.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="设备厂商">
+              <el-input v-model="deviceinfoForm.devicemanufacture" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="设备型号">
+              <el-input v-model="deviceinfoForm.unittype" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="设备序列号">
+              <el-input v-model="deviceinfoForm.deviceserialnumber" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row v-for="i in 4" :key="i">
+          <el-col :span="12">
+            <el-form-item :label="`用户${i}`">
+              <el-input v-model="deviceinfoForm[`user${i}`]" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="`密码${i}`">
+              <el-input v-model="deviceinfoForm[`pwd${i}`]" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="备注">
+              <el-input type="textarea" v-model="deviceinfoForm.mem" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item>
+          <el-button type="info" @click="onCancel">取消</el-button>
+          <el-button type="primary" @click="onSubmit">提交</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+  </HYMain>
 </template>
 
-<style scoped></style>
+<style scoped>
+.flex-form .el-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.flex-form .el-form-item {
+  margin-bottom: 0;
+}
+</style>

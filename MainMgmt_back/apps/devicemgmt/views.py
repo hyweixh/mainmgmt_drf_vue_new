@@ -1,6 +1,7 @@
 import re
 import io
 import json
+import logging
 import pandas as pd
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
@@ -273,6 +274,10 @@ class DeviceinfoDownloadView(APIView):
 
     def get(self, request):
         try:
+            # ✅ 打印Authorization头（调试用）
+            auth_header = request.headers.get('Authorization', '无')
+            logger.info(f"Authorization头: {auth_header}")  # ✅ 使用已定义的logger
+
             # 1. 解析请求参数
             pks_raw = request.query_params.get('pks')
 

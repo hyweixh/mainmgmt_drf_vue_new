@@ -1,23 +1,163 @@
-/* src/assets/styles/utilities.css */
+/* src/assets/css/utilities.css */
 
-/* 垂直居中的表单项 */
+/* ==================== 表单公共样式 ==================== */
+
+/* 垂直居中的表单项（原有保留） */
 .form-item-center {
-    margin-bottom: 0 !important;  /* 移除默认下边距 */
-    display: flex !important;
-    align-items: center !important;
-  }
-  .d-flex { 
-    display: flex; 
-  }
-  .justify-content-start {
-     justify-content: flex-start;
-     }
-  .justify-content-end { 
-    justify-content: flex-end; 
-  }
-  .align-items-center {
-     align-items: center; 
-    }   
-  .select_with { 
-    width: 200px; margin-right: 20px;
-   } 
+  margin-bottom: 0 !important;  /* 移除默认下边距 */
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 表单标签对齐方式 */
+.el-form-item__label {
+  text-align: right;
+  padding-right: 12px;
+  font-weight: normal;
+  color: #606266;
+}
+
+/* 标准输入框宽度 */
+.el-input.input-with {
+  width: 200px;
+}
+
+/* 标准选择框宽度（优化原有select_with） */
+.el-select.select-with {
+  width: 200px;
+  margin-right: 20px;
+}
+
+/* 表单元素间距 */
+.el-form-item {
+  margin-bottom: 18px;
+  margin-right: 20px;
+}
+
+/* 最后一项表单元素去除右边距 */
+.el-form-item:last-child {
+  margin-right: 0;
+}
+
+/* 表单项水平排列容器 */
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+/* 表单按钮组样式 */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+}
+
+/* ==================== Flex 工具类（合并原有） ==================== */
+.d-flex {
+  display: flex;
+}
+
+.justify-content-start {
+  justify-content: flex-start;
+}
+
+.justify-content-end {
+  justify-content: flex-end;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+/* 新增扩展的Flex工具类 */
+.align-items-flex-end {
+  align-items: flex-end;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.align-items-flex-start {
+  align-items: flex-start;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/* ==================== 间距工具类 ==================== */
+/* margin-right */
+.mr-5 { margin-right: 5px; }
+.mr-10 { margin-right: 10px; }
+.mr-15 { margin-right: 15px; }
+.mr-20 { margin-right: 20px; }
+
+/* margin-left */
+.ml-5 { margin-left: 5px; }
+.ml-10 { margin-left: 10px; }
+.ml-15 { margin-left: 15px; }
+.ml-20 { margin-left: 20px; }
+
+/* margin-bottom */
+.mb-5 { margin-bottom: 5px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-15 { margin-bottom: 15px; }
+.mb-20 { margin-bottom: 20px; }
+
+/* margin-top */
+.mt-5 { margin-top: 5px; }
+.mt-10 { margin-top: 10px; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+
+/* padding */
+.p-10 { padding: 10px; }
+.p-15 { padding: 15px; }
+.p-20 { padding: 20px; }
+
+/* ==================== 字体工具类 ==================== */
+.font-size-14 {
+  font-size: 14px;
+}
+
+.font-size-16 {
+  font-size: 16px;
+}
+
+.font-weight-bold {
+  font-weight: bold;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ==================== 其他常用工具类 ==================== */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hidden {
+  display: none;
+}

@@ -6,7 +6,8 @@ import HYDialog from "@/components/HYDialog.vue";
 import HYPgination from "@/components/HYPgination.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
-import { ElMessage, ElLoading } from 'element-plus'
+import { ElMessage, ElMessageBox,ElLoading } from 'element-plus'
+import apiClient from '@/api/axios'
 
 const authStore = useAuthStore();
 
@@ -175,25 +176,58 @@ const onShowImportdeviceinfoDialog = () => {
 }
 
 // 导出数据
+// 在 list.vue 中
 const export_deviceinfo = async () => {
-    let rows = tableRef.value.getSelectionRows()
-    if (!rows || rows.length == 0) {
-        ElMessage.info('请先选中要导出的设备！')
-        return;
-    }
+    const rows = tableRef.value.getSelectionRows()
+    const deviceIds = rows.map(row => row.id)
     
+    // 未选择设备时确认导出全部
+    if (deviceIds.length === 0) {
+        try {
+            await ElMessageBox.confirm(
+                '未选择设备，将导出当前筛选条件下的所有设备？',
+                '确认导出',
+                { type: 'info' }
+            )
+        } catch {
+            return // 用户取消
+        }
+    }
+
+    const loading = ElLoading.service({
+        lock: true,
+        text: deviceIds.length > 0 ? '正在导出选中设备...' : '正在导出全部设备...',
+        background: 'rgba(0, 0, 0, 0.7)'
+    })
+
     try {
-        let response = await devicemgmtHttp.downloadDeviceinfos(rows.map(row => row.id))
-        let href = URL.createObjectURL(response.data)
-        const a = document.createElement("a")
-        a.href = href
-        a.setAttribute('download', '设备信息.xlsx')
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(href)
-    } catch (detail) {
-        ElMessage.error(detail)
+        // ✅ 调用更简洁，无需传token
+        const response = await devicemgmtHttp.downloadDeviceinfos(deviceIds)
+        
+        // 下载文件
+        const blob = new Blob([response.data], { 
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `设备信息_${new Date().toLocaleDateString()}.xlsx`
+        link.click()
+        window.URL.revokeObjectURL(url)
+        
+        loading.close()
+        ElMessage.success(`✅ 导出成功！共 ${deviceIds.length || '全部'} 台设备`)
+        
+    } catch (error) {
+        loading.close()
+        
+        if (error.response?.status === 403) {
+            ElMessage.error('认证失败，请重新登录')
+            authStore.logout()
+            router.push('/login')
+        } else {
+            ElMessage.error(error.response?.data?.detail || '导出失败，请重试')
+        }
     }
 }
 

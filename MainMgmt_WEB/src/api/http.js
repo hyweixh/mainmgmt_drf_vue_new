@@ -5,7 +5,7 @@ class Http{
     constructor(){
         this.instance = axios.create({
             baseURL: import.meta.env.VITE_BASE_URL,
-            timeout: 6000 
+            timeout: 30000 
         });
         
         const PUBLIC_API_PATHS = [

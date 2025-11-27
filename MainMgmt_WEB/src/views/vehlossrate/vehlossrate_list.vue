@@ -8,7 +8,7 @@ import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
 import { useImageStore } from '@/stores/imageUrlStore'
 import { showLoading, hideLoading } from '@/utils/loading'
- 
+
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const route = useRoute();
 // 使用 useRouter 钩子来获取 router 实例  
@@ -145,6 +145,12 @@ const onSearch_vehlossrate = async () => {
     hideLoading() // ✅ 关键：关闭 loading
   }
 }
+// 格式化日期时间格式为“2025-11-27 00:00:00”,同时去掉时区
+const formatDateTime = (row, column, cellValue) => {
+  if (!cellValue) return '';
+  return cellValue.replace('T', ' ').replace(/[+-]\d{2}:\d{2}$/, '');
+}
+
 
 </script>
 
@@ -152,33 +158,34 @@ const onSearch_vehlossrate = async () => {
     <HYMain title="车道车牌识别率" style="margin-top: 10px;">
         <el-card>
             <el-row>
-                <el-col :span="11" class="d-flex justify-content-start">
-                    <span class="sel-margin-bottom">请选择查询时段</span>
+                <el-col :span="12" class="d-flex justify-content-start">
+                    <!-- align-items-center未能上下居中 -->
+                    <span class="mr-20 font-size-14 align-items-center">请选择查询时段</span>
                     <el-date-picker 
-                        class="sel-margin-bottom"                         
+                        class="date-picker-with"                         
                         v-model="value1" type="datetimerange"
                         start-placeholder="开始日期时间" 
                         end-placeholder="结束日期时间"                  
                         :picker-options="pickerOptions">                        
                     </el-date-picker>
 
-                    <span class="sel-margin-bottom" style="margin-left: 20px;">仅统计新能源车</span>
+                    <span class="mr-20 ml-20 font-size-14 align-items-center" >仅统计新能源车</span>
                     <el-switch class="sel-margin-bottom" 
                         v-model="is_NEVs" 
                         active-color="#13ce66"
                         inactive-color="#ff4949">
                     </el-switch>
                     <!-- 选择时间段后，执行按钮才可用   -->
-                    <el-button type="primary" :disabled="!(value1 && value1.length === 2 && value1[0] && value1[1])"
+                    <el-button class="ml-15" type="primary" :disabled="!(value1 && value1.length === 2 && value1[0] && value1[1])"
                         @click="onSearch_vehlossrate">执行</el-button>
 
                 </el-col>
-                <el-col :span="13" class="d-flex justify-content-end">
-                    <el-form-item label="按站编号" label-width="100px">
-                        <el-input  v-model="filterForm.stationno"  placeholder="输入地标站编码" class="input_with"/>
+                <el-col :span="12" class="d-flex justify-content-end">
+                    <el-form-item class="mr-20 font-size-14" label="按站编号" label-width="100px">
+                        <el-input  v-model="filterForm.stationno"  placeholder="输入地标站编码" class="mr-20 font-size-14h"/>
                     </el-form-item>
-                    <el-form-item label="按总识别率" label-width="100px">
-                        <el-input v-model="filterForm.per1" placeholder="小于/等于输入的值" class="input_with"/>
+                    <el-form-item class="mr-20 font-size-14" label="按总识别率" label-width="100px">
+                        <el-input v-model="filterForm.per1" placeholder="小于/等于输入的值" class="imr-20 font-size-14"/>
                     </el-form-item>
 
                     <el-button type="primary" icon="Search" @click="onSearch"></el-button>
@@ -207,10 +214,10 @@ const onSearch_vehlossrate = async () => {
                 <el-table-column prop="per" label="抓拍率%" width="100"></el-table-column>
                 <el-table-column prop="per1" label="总识别率%" width="100"></el-table-column>
                 <el-table-column prop="per2" label="有牌识别率%" width="150"></el-table-column>
-                <el-table-column prop="starttime" label="统计开始时间" width="180">
+                <el-table-column prop="starttime" label="统计开始时间" width="200" :formatter="formatDateTime">
 
                 </el-table-column>
-                <el-table-column prop="endtime" label="统计结束时间" width="180">
+                <el-table-column prop="endtime" label="统计结束时间" width="200" :formatter="formatDateTime">
 
                 </el-table-column>
                 <!-- <el-table-column prop="inspector" label="检查人员" width="120"></el-table-column> -->
@@ -232,56 +239,20 @@ const onSearch_vehlossrate = async () => {
 </template>
 
 <style scoped>
-.sel-margin-bottom {
-    margin-right: 5px;
-    margin-right: 20px; 
-}
-/* 下拉框表单宽度 */
-.my-form-inline .el-select {
-    --el-select-width: 150px;
-}
-
-.my-form-inline .el-input {
-    --el-input-width: 200px;
-}
-.el-badge {
-    margin-right: 2px;
-    margin-top: 2px;
-}
-
-.el-tag {
-    margin-right: 2px;
-}
-
+/* 移除重复的样式，只保留组件特有的样式 */
 .lanepsaminfot-table .ellipsis-column .cell {
-    white-space: nowrap;
-    overflow: hidden;
-    /* ellipsis表示文本将被截断，并在末尾显示省略号（...） */
-    text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 表格标题加粗 */
 .bold-title {
-    font-weight: bold;
+  font-weight: bold;
 }
+/* 标准日期选择器宽度 */
+.date-picker-with {
+  width: 360px; /* 适合日期时间范围选择器的默认宽度 */
+  font-size: 14px
+}                      
 
-.d-flex {  
-        display: flex;  
-    }  
-    .justify-content-start {  
-        justify-content: flex-start;  
-    }  
-    .justify-content-end {  
-        justify-content: flex-end;  
-    }  
-    .align-items-flex-end {  
-        align-items: flex-end;  
-    }  
-    .flex-column {  
-        flex-direction: column;  
-    }  
-    .input_with{
-        width:200px;  
-        margin-right: 20px;
-    }
 </style>
