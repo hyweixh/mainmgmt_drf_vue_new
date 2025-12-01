@@ -18,6 +18,7 @@ urlpatterns = [
     path('api/holidayfree/', include('apps.holidayfree.urls')),   # 节假日免费参数
     path('api/lanepsaminfo/', include('apps.lanepsaminfo.urls')),  # 车道psam卡信息
     path('api/gantrypsaminfo/', include('apps.gantrypsaminfo.urls')),   # 门架psam卡信息
+    path('api/pingdevices/', include('apps.pingdevices.urls')),         # ping设备ip
 
     # drf_spectacular
     path('api/schema/', SpectacularAPIView.as_view(permission_classes=[AllowAny]), name='schema'),

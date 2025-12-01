@@ -7,7 +7,7 @@ from .models import Vehlossrate
 from rest_framework.response import Response
 from utils.databaseclass import Mssql_class
 import logging
-from django.utils import timezone  # 新增：处理时区
+# from django.utils import timezone  # 新增：处理时区
 from datetime import datetime  # 新增
 from django.db import transaction  # 新增：事务控制
 
@@ -91,7 +91,7 @@ def get_Vehlossrate_info(request):
         vehlossrate_info = mssql_instance.execute_query(query, query_params)
 
         if vehlossrate_info:
-            current_time = timezone.now() if settings.USE_TZ else time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            current_time =  datetime.now()() if settings.USE_TZ else time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
             # 使用bulk_create批量插入（性能提升10倍以上）
             batch_data = []

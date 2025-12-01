@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     # 'django_extensions',  # 注意是下划线，不是连字符
     'rest_framework',
     'corsheaders',  # 跨域处理
-    'django_celery_beat',   # celery 动态任务
+    'django_celery_beat',   # celery_app 动态任务
     "auth.sysuser.apps.OpsauthConfig",
     "auth.sysrole.apps.SysroleConfig",
     "auth.sysmenu.apps.SysmenuConfig",
@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'apps.vehlossrate',
     'apps.holidayfree',
     'apps.lanepsaminfo',
-    'apps.gantrypsaminfo'
+    'apps.gantrypsaminfo',
+    'apps.pingdevices'
 ]
 
 # 核心中间件
@@ -87,7 +88,7 @@ DATABASES = {
 
         'OPTIONS': {
             # MySQL 8.0 推荐SQL模式
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'; SET time_zone = '+08:00'",
             # 'init_command': "SET time_zone = '+08:00'",  # 可选：设置MySQL会话时区
 
             # 字符集（确保表也使用utf8mb4）
@@ -136,7 +137,7 @@ ROOT_URLCONF = 'mainmgmt.urls'  # 全局 URL 路由配置
 WSGI_APPLICATION = 'mainmgmt.wsgi.application'  # 连接入口
 LANGUAGE_CODE = 'zh-hans'  # 语言编码
 USE_I18N = True     # 国际化
-USE_TZ = True      # 使用时区
+USE_TZ = False      # 使用时区
 TIME_ZONE = 'Asia/Shanghai'     # 时区
 STATIC_URL = 'static/'         # 静态文件前缀
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'    # 模型AutoField的默认类型
@@ -159,10 +160,10 @@ CELERY_WORKER_CANCEL_LONG_RUNNING_TASKS_ON_CONNECTION_LOSS = True
 CONSUL_BASE_URL = os.getenv('CONSUL_BASE_URL')
 
 # =================== DNS配置 ===================
-DNS_REDIS_URL = env.str("DNS_REDIS_URL")    # dns-redis配置
-UPSTREAM_DNS = ast.literal_eval(os.getenv('UPSTREAM_DNS', '[]'))    # 解析上游 DNS（字符串 → Python list）
-TIMEOUT = int(os.getenv('TIMEOUT', 2))      # 超时时间（默认 2 秒）
-UDP_SIZE = int(os.getenv('UDP_SIZE', 4096)) # 最大 UDP 响应长度（默认 4096 字节）
+# DNS_REDIS_URL = env.str("DNS_REDIS_URL")    # dns-redis配置
+# UPSTREAM_DNS = ast.literal_eval(os.getenv('UPSTREAM_DNS', '[]'))    # 解析上游 DNS（字符串 → Python list）
+# TIMEOUT = int(os.getenv('TIMEOUT', 2))      # 超时时间（默认 2 秒）
+# UDP_SIZE = int(os.getenv('UDP_SIZE', 4096)) # 最大 UDP 响应长度（默认 4096 字节）
 
 # =================== 验证码配置 ===================
 CAPTCHA_ENABLED = env.bool('CAPTCHA_ENABLED', default=True)     # 是否开启验证码
@@ -199,15 +200,15 @@ CACHES = {
         'LOCATION': env.str('CACHE_REDIS_URL'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',  # 使用JSON序列化
+            'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
         },
-        'KEY_PREFIX': 'captcha',  # 设置为captcha前缀
+        'KEY_PREFIX': 'ping',  # ✅ 改为 'ping' 或移除（使用默认）
         'VERSION': 1,
-        'TIMEOUT': 300,  # 5分钟过期
+        'TIMEOUT': 3600,  # ✅ 改为 1 小时，确保任务执行期间缓存有效
     }
 }
 # mssql参数
-MSSQL_SERVER = '127.0.0.1'
+MSSQL_SERVER = '10.88.188.20'
 MSSQL_DATABASE = 'roaddb_qxsj'
 MSSQL_USER = 'hyits'
 MSSQL_PW = 'hyits_93'
@@ -283,3 +284,21 @@ LOGGING = {
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer', 'JWT'),  # ✅ 同时支持两种格式
 }
+# ping的参数
+PING_ATTEMPTS = 3
+PING_TIMEOUT = 2
+GANTRY_SUBNETWORK_ID = 3
+
+# Celery配置,从.env设置
+# CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+# CELERY_TASK_TIME_LIMIT = 300
+
+# Channels配置
+# ASGI_APPLICATION = 'your_project.asgi.application'
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {"hosts": [('127.0.0.1', 6379)]},
+#     },
+# }

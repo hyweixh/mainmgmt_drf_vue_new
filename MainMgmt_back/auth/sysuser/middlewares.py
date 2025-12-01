@@ -4,6 +4,7 @@
 2. 日志记录中间件：记录请求详细信息，用于审计和监控
 """
 # 导入Django及DRF相关模块
+import datetime
 from django.utils.deprecation import MiddlewareMixin  # 兼容旧版中间件的基类
 from rest_framework.authentication import get_authorization_header  # 获取请求头中的认证信息
 from rest_framework import exceptions  # DRF的异常类
@@ -121,7 +122,7 @@ from user_agents import parse  # 解析用户代理（浏览器/操作系统信�
 from .models import RequestLog  # 请求日志模型（需提前定义）
 from auth.permission.models import SysPermission  # 系统权限模型（用于匹配操作名称）
 import re  # 正则表达式（用于匹配URL路径）
-from django.utils import timezone  # 时区处理
+# from django.utils import timezone  # 时区处理
 
 
 # 获取Django默认的日志记录器（在settings.LOGGING中配置）
@@ -164,7 +165,8 @@ class LogClientIPMiddleware:
         browser_info = f"{user_agent.browser.family} {user_agent.browser.version_string}"  # 浏览器信息
 
         # 5. 获取当前时间（按项目时区格式化）
-        current_time = timezone.localtime(timezone.now())
+        # current_time = timezone.localtime( datetime.now()())
+        current_time = datetime.datetime.now()
 
         # 6. 处理请求（调用下一个中间件或视图函数，获取响应）
         response = self.get_response(request)

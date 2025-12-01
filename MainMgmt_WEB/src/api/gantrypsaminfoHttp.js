@@ -35,7 +35,7 @@ const get_gantrypsaminfo_frMSSQL = () => {
 
 
 const downloadGantrypsaminfo = (pks) => {
-    const path = "/api/gantrypsaminfo/download/"
+    const path = "/api/gantrypsaminfo/download"
     return http.downloadFile(path, {"pks": JSON.stringify(pks)})
 }
 

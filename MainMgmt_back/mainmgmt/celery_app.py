@@ -18,7 +18,7 @@ def setup_loggers(logger, *args, **kwargs):
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # add filehandler
-    fh = logging.FileHandler('celery.log')
+    fh = logging.FileHandler('celery_app.log')
     fh.setLevel(logging.INFO)
     fh.setFormatter(formatter)
     logger.addHandler(fh)

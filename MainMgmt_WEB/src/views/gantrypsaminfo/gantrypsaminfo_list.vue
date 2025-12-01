@@ -7,6 +7,7 @@ import HYPgination from "@/components/HYPgination.vue";
 import timeFormatter from '@/utils/timeFormatter';
 import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
+import { showLoading, hideLoading } from '@/utils/loading';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const route = useRoute();
@@ -103,15 +104,36 @@ const onupdatePsamstatus = async () => {
 }
 
 const ongantrypsaminfo_frMSSQL = async () => {
+    showLoading('获取门架PSAM卡信息...')
     try {
-        let data = await gantrypsaminfoHttp.get_gantrypsaminfo_frMSSQL();
-        // console.log(data);  
-        requestgantrypsaminfos(1, page_size.value);
-        ElMessage.success('获取门架psam卡信息成功！');
+        const data = await gantrypsaminfoHttp.get_gantrypsaminfo_frMSSQL();
+        
+        if (data.error) {
+            // 如果后端返回 error 字段
+            ElMessage.error(`同步失败: ${data.error}`);
+            return;
+        }
+        
+        // 成功后刷新数据
+        await requestgantrypsaminfos(1, page_size.value);
+        ElMessage.success(`同步成功！已处理 ${data.processed || 0} 条记录`);
+        
     } catch (error) {
+        // 捕获 HTTP 网络错误
         console.error('获取psaminfo失败:', error);
-        ElMessage.error('获取数据时发生错误，请稍后重试。');
-    }
+        
+        // 显示详细的错误信息
+        let errorMessage = '获取数据时发生错误';
+        if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        ElMessage.error(errorMessage);
+    }finally {
+             hideLoading() // ← 必须加
+         } 
 }
 
 const onDialogCancel = async () => {

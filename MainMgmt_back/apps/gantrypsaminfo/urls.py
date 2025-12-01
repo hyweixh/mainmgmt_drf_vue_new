@@ -10,8 +10,8 @@ router.register("gantrypsaminfo", views.GantryPsamInfoViewSet, basename='gantryp
 
 urlpatterns = [
       path('', include(router.urls)),
-      path('getgantrypsaminfo/', get_gantrypsam_info, name='getgantrypsaminfo'),
-      path('download/', gantrypsam_download, name='gantrypsam_download'),
+      path('getgantrypsaminfo', get_gantrypsam_info, name='getgantrypsaminfo'),
+      path('download', gantrypsam_download, name='gantrypsam_download'),
 
 
 ]

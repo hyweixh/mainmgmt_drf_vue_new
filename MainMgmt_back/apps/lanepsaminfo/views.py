@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 from django.conf import settings
 from django.http import JsonResponse
 from rest_framework.generics import ListAPIView
@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from utils.databaseclass import Mssql_class
 from utils.export_excels import ExcelExporter
-from django.utils import timezone
+# from django.utils import timezone
 # from openpyxl.styles import Font, Color, Alignment
 
 class PsamStatusViewSet(ListAPIView):
@@ -62,7 +62,7 @@ class LanePsamInfoViewSet(viewsets.ModelViewSet):
         serializer.validated_data['lanecomputerip'] = '0.0.0.0'  # 示例：设置默认IP
         # serializer.validated_data['last_createtime'] = time.strftime('%Y-%m-%d %H:%M:%S',
         #                                                               time.localtime())  # 更新最后创建时间
-        serializer.validated_data['last_createtime'] = timezone.now()
+        serializer.validated_data['last_createtime'] = datetime.now()
         serializer.validated_data['psamstatus_id'] = 2  # 示例：设置psamstatus_id为2
         serializer.validated_data['mem'] = mem_value  # 设置mem字段的值
 
@@ -94,7 +94,7 @@ def get_lanepsam_info(request):
             # 准备要保存或更新的数据
             default_psam_status = get_object_or_404(PsamStatus, id=1)
             # current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            current_time = timezone.now()
+            current_time = datetime.now()
             for row in psam_info:
                 if row[5] is None:  # 跳过 psamno 为 None 的记录
                     continue

@@ -7,7 +7,7 @@ from rest_framework import viewsets, status
 from .serializers import HolidayfreeSerializer
 from rest_framework.response import Response
 from utils.Telnetport import TelnetClient
-from django.utils import timezone
+# from django.utils import timezone
 from utils.databaseclass import Mssql_class, Firebird_class
 
 class HolidayfreeViewSet(viewsets.ModelViewSet):
@@ -57,13 +57,13 @@ def update_or_create_holidayfree(lane_info, holiday_data=None, inspect_result='�
         'lanecomputerip': lanecomputerip,
         'lanetype': lanetype,
         'verid': '000',
-        # 'starttime': datetime(2000, 1, 1, 0, 0),
-        # 'overtime': datetime(2000, 1, 1, 0, 0),
-        'starttime': timezone.make_aware(datetime(2000, 1, 1, 0, 0, 0)),  # 关键：添加时区
-        'overtime': timezone.make_aware(datetime(2000, 1, 1, 0, 0, 0)),  # 关键：添加时区
+        'starttime': datetime(2000, 1, 1, 0, 0),
+        'overtime': datetime(2000, 1, 1, 0, 0),
+        # 'starttime': timezone.make_aware(datetime(2000, 1, 1, 0, 0, 0)),  # 关键：添加时区
+        # 'overtime': timezone.make_aware(datetime(2000, 1, 1, 0, 0, 0)),  # 关键：添加时区
         'inspector': cur_name,
         # 'inspecttime': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        'inspecttime': timezone.now(),
+        'inspecttime':  datetime.now(),
         'inspectresult': inspect_result,
     }
     # print("初始的defaults数据:", defaults)  # 打印初始的 defaults 字典

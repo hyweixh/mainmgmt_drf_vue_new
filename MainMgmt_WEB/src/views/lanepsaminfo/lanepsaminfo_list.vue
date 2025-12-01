@@ -248,15 +248,7 @@ const export_excels = async () => {
                 </el-table-column>
             </el-table>
             <template #footer>
-                <!-- <div style="display: flex; justify-content: space-between;"> -->
-                <!-- <el-form-item label="每页：">
-                        <el-select v-model="page_size" size="small" style="width: 100px;">
-                            <el-option select label="10条/页" :value="1" />
-                            <el-option label="20条/页" :value="2" />
-                        </el-select>
-                    </el-form-item> -->
                 <HYPgination v-model="pagination.page" :total="pagination.total"></HYPgination>
-                <!-- </div> -->
             </template>
         </el-card>
     </HYMain>

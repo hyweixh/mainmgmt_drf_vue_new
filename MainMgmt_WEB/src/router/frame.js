@@ -15,6 +15,7 @@ import vehlossrate_disppic from '@/views/vehlossrate/vehlossrate_disppic.vue';
 import holidayfreelist from '@/views/holidayfree/holidayfree_list.vue';
 import lanepsaminfolist from '@/views/lanepsaminfo/lanepsaminfo_list.vue';
 import gantrypsaminfolist from '@/views/gantrypsaminfo/gantrypsaminfo_list.vue';
+import pingdeviceslist from '@/views/pingdevices/pingdevices_list.vue';
 
 const routes = [
   {
@@ -206,6 +207,45 @@ const routes = [
             meta: { 
               text: '下载门架psam卡信息',
               permission: 'gantrypsaminfo:download'
+            }
+          }
+        ]
+      },
+      // ping终端ip
+      {
+        path: '/pingdevices',
+        name: 'pingdevices',
+        redirect: '/pingdevices/list',
+        meta: { text: '设备连通性检查', icon: 'app' },
+        children: [
+          {
+            path: 'list',
+            name: 'pingdevices_list',
+            component: pingdeviceslist,
+            meta: { text: '设备连通性检查', icon: 'server', permission: 'pingdevices:view' }
+          },
+          {
+            path: 'pingdeviceslist',
+            name: 'pingdeviceslist',
+            meta: { 
+              text: '获取ping状态',
+              permission: 'pingdevices:getpintstatus'
+            }
+          },
+          {
+            path: 'edit/:deviceip',
+            name: 'editPing',
+            meta: { 
+              text: '编辑断网原因',
+              permission: 'pingdevices:edit'
+            }
+          },
+          {
+            path: 'download',
+            name: 'downloadPingdevices',
+            meta: { 
+              text: '下载ping检查结果',
+              permission: 'pingdevices:download'
             }
           }
         ]

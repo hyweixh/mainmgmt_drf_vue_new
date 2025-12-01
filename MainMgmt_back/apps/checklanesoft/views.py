@@ -1,7 +1,7 @@
 # import time
-import datetime
+from datetime import datetime
 from django.db.models import Q
-from django.utils import timezone
+# from django.utils import timezone
 from django.conf import settings
 from django.http import JsonResponse
 from rest_framework import viewsets, status
@@ -151,7 +151,7 @@ def get_Checklanesoft_info(request):
             # 准备要保存或更新的数据
             # current_time与setting.py中USE_TZ设置有关，USE_TZ = True用下面复制
             # current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            current_time = timezone.now()
+            current_time = datetime.now()
 
             for row in lanesoftpara_info:
                 # 准备数据字典
@@ -201,12 +201,12 @@ class UpdateAllConfirmLaneSoftView(APIView):
     def post(self, request, *args, **kwargs):
         # 对所有记录进行更新
         current_user = request.user  # 获取当前用户
-        current_time = timezone.now()
+        current_time = datetime.now()
 
         # 更新所有记录
         Checklanesoft.objects.all().update(
             confirmer=current_user.realname if hasattr(current_user, 'realname') else 'Unknown',
-            confirmdatetime=current_time,
+            confirmdatetime = current_time,
             isconfirm=1
         )
         # 返回响应
@@ -249,7 +249,7 @@ def checklanesoft_import_history(request):
         )
         for obj in objects_to_update:
             obj.confirmer = request.session["user_info"]['display_name']
-            obj.confirmdatetime = timezone.now()  # 使用timezone.now()获取当前时间，保持为datetime对象
+            obj.confirmdatetime =  datetime.now()  # 使用 datetime.now()()获取当前时间，保持为datetime对象
             obj.isconfirm = True
             obj.save()
 
@@ -304,7 +304,7 @@ def checklanesoft_download(request):
                 val = getattr(obj, field_name)
 
                 # 处理 datetime 类型
-                if isinstance(val, datetime.datetime):
+                if isinstance(val, datetime):
                     row.append(val.strftime('%Y-%m-%d %H:%M:%S'))
                 else:
                     row.append(val or '')  # 将 None 转换为空字符串
