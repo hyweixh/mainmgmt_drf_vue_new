@@ -179,28 +179,101 @@ def save_ping_results(request):
 
 # ==================== 历史结果查询 ====================
 class PingResultPagination(PageNumberPagination):
-    """分页配置"""
-    page_size = 50
-    page_size_query_param = 'page_size'
-    max_page_size = 200
+    """分页配置 - 返回所有记录"""
+    page_size = None  # None表示禁用分页，返回全部数据
+    page_size_query_param = None  # 禁止客户端通过参数修改
+    max_page_size = None
 
 
+# class PingResultAPIView(ListAPIView):
+#     """
+#     历史 Ping 结果查询接口
+#     GET /api/pingdevices/results/history
+#
+#     支持过滤参数：
+#     - ip: 按设备IP过滤
+#     - status: 按检测结果过滤 (在线/离线/检查失败)，支持单个或多个值，逗号分隔
+#     - days: 查询最近N天的数据（默认7天）
+#     """
+#     queryset = Pingdevices.objects.all().order_by('-inspecttime')
+#     serializer_class = PingResultSerializer
+#     pagination_class = PingResultPagination
+#
+#     # 中文到英文的映射
+#     STATUS_CHINESE_TO_ENG = {
+#         '在线': 'online',
+#         '离线': 'offline',
+#         '检查失败': 'error',
+#         # 同时保留英文值支持
+#         'online': 'online',
+#         'offline': 'offline',
+#         'error': 'error'
+#     }
+#
+#     def get_queryset(self):
+#         queryset = super().get_queryset()
+#
+#         # 按IP过滤
+#         ip = self.request.query_params.get('ip')
+#         if ip:
+#             queryset = queryset.filter(deviceip=ip)
+#
+#         # ====== 按检测结果过滤（支持中文和英文） ======
+#         status = self.request.query_params.get('status')
+#         if status:
+#             # 解析逗号分隔的多个状态
+#             status_list = []
+#             for s in status.split(','):
+#                 s = s.strip()
+#                 # 映射中文到英文，过滤非法值
+#                 if s in self.STATUS_CHINESE_TO_ENG:
+#                     status_list.append(self.STATUS_CHINESE_TO_ENG[s])
+#
+#             if status_list:
+#                 queryset = queryset.filter(inspectresult__in=status_list)
+#
+#         # 按时间范围过滤（默认7天）
+#         days = self.request.query_params.get('days', '7')
+#         try:
+#             days = int(days)
+#             start_date = timezone.now() - timedelta(days=days)
+#             queryset = queryset.filter(inspecttime__gte=start_date)
+#         except (ValueError, TypeError):
+#             pass
+#
+#         return queryset
+#
+#     def list(self, request, *args, **kwargs):
+#         """自定义响应格式，添加统计信息"""
+#         response = super().list(request, *args, **kwargs)
+#
+#         # 添加统计
+#         queryset = self.filter_queryset(self.get_queryset())
+#         total = queryset.count()
+#         online = queryset.filter(inspectresult='online').count()
+#         offline = queryset.filter(inspectresult='offline').count()
+#         error = queryset.filter(inspectresult='error').count()
+#
+#         response.data['statistics'] = {
+#             'total': total,
+#             'online': online,
+#             'offline': offline,
+#             'error': error,
+#             'success_rate': round(online / max(total, 1) * 100, 2)
+#         }
+#
+#         return response
 class PingResultAPIView(ListAPIView):
     """
     历史 Ping 结果查询接口
     GET /api/pingdevices/results/history
     """
-    queryset = Pingdevices.objects.all().order_by('-inspecttime')
+    queryset = Pingdevices.objects.all().order_by('position')
     serializer_class = PingResultSerializer
     pagination_class = PingResultPagination
 
     def get_queryset(self):
-        """
-        支持过滤参数：
-        - ip: 按设备IP过滤
-        - status: 按状态过滤 (online/offline/error)
-        - days: 查询最近N天的数据
-        """
+        # ... 保持原过滤逻辑 ...
         queryset = super().get_queryset()
 
         # 按IP过滤
@@ -208,12 +281,18 @@ class PingResultAPIView(ListAPIView):
         if ip:
             queryset = queryset.filter(deviceip=ip)
 
-        # 按状态过滤
+        # 按检测结果过滤（支持多选）
         status = self.request.query_params.get('status')
-        if status in ['online', 'offline', 'error']:
-            queryset = queryset.filter(inspectresult=status)
+        if status:
+            # 解析逗号分隔的多个状态，自动过滤非法值
+            status_list = [
+                s.strip() for s in status.split(',')
+                if s.strip() in ['online', 'offline', 'error']
+            ]
+            if status_list:
+                queryset = queryset.filter(inspectresult__in=status_list)
 
-        # 按时间范围过滤（默认7天）
+        # 按时间范围过滤
         days = self.request.query_params.get('days', '7')
         try:
             days = int(days)
@@ -228,14 +307,14 @@ class PingResultAPIView(ListAPIView):
         """自定义响应格式，添加统计信息"""
         response = super().list(request, *args, **kwargs)
 
-        # 添加统计
+        # 计算统计信息
         queryset = self.filter_queryset(self.get_queryset())
         total = queryset.count()
         online = queryset.filter(inspectresult='online').count()
         offline = queryset.filter(inspectresult='offline').count()
         error = queryset.filter(inspectresult='error').count()
 
-        response.data['statistics'] = {
+        statistics_data = {
             'total': total,
             'online': online,
             'offline': offline,
@@ -243,4 +322,40 @@ class PingResultAPIView(ListAPIView):
             'success_rate': round(online / max(total, 1) * 100, 2)
         }
 
+        # ✅ 关键修复：兼容分页禁用的情况
+        if isinstance(response.data, list):
+            # 禁用分页时，response.data 是列表，需要包装
+            response.data = {
+                'results': response.data,
+                'count': len(response.data),
+                'statistics': statistics_data
+            }
+        else:
+            # 启用分页时，response.data 是字典，直接添加
+            response.data['statistics'] = statistics_data
+
         return response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+# from .models import DeviceType
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_device_types(request):
+    """
+    获取所有设备类型列表
+    GET /api/devicemgmt/device-types/
+    """
+    try:
+        types = DeviceType.objects.all().values('id', 'devicetypename')
+        return Response({
+            'success': True,
+            'data': list(types),
+            'count': len(types)
+        })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=500)

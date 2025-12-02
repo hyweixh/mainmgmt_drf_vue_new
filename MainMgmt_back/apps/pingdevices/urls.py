@@ -12,4 +12,5 @@ urlpatterns = [
     path('ping/batch/<str:task_id>', views.get_batch_ping_progress, name='get_batch_ping_progress'),
     path('save-results', views.save_ping_results, name='save_ping_results'),
     path('results/history', views.PingResultAPIView.as_view(), name='ping_results_history'),
+    path('device-types', views.get_device_types, name='device-types'),
 ]

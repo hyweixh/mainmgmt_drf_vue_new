@@ -42,11 +42,21 @@ const getHistoricalResults = async () => {
     return data
 }
 
+// 获取设备类型列表
+export const getDeviceTypes = async () => {
+    console.log('📡 调用getDeviceTypes（获取设备类型列表）')
+    const data = await http.get("/api/devicemgmt/device-types")
+    console.log('✅ 设备类型响应:', data)
+    return data
+}
+
+
 export default {
     getDeviceList,
     startBatchPing,
     getBatchPingProgress,
     savePingResults,
-    getHistoricalResults
+    getHistoricalResults,
+    getDeviceTypes
 }
 

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- 操作区域：显示当前检查人员 + 执行按钮 -->
+    <!-- 操作区域 -->
     <el-card style="margin-bottom: 20px">
       <el-row :gutter="20" align="middle">
         <el-col :span="6">
@@ -31,10 +31,11 @@
         <el-col :span="8" :offset="4">
           <el-input
             v-model="searchKeyword"
-            placeholder="搜索桩号/设备名称/IP"
+            placeholder="搜索桩号/设备名称/IP/检测结果"
             clearable
             size="large"
             @keyup.enter="handleSearch"
+            @clear="handleSearchClear"
           >
             <template #append>
               <el-button @click="handleSearch" icon="Search" />
@@ -44,25 +45,7 @@
       </el-row>
     </el-card>
     
-    <!-- 统计卡片 -->
-    <!-- <el-card>
-    <el-row v-if="statistics" :gutter="20" style="margin-top: 20px">
-      <el-col :span="6">
-        <el-statistic title="在线设备" :value="statistics.success" value-style="color: #67C23A"/>
-      </el-col>
-      <el-col :span="6">
-        <el-statistic title="离线设备" :value="statistics.failed || statistics.error" value-style="color: #F56C6C"/>
-      </el-col>
-      <el-col :span="6">
-        <el-statistic title="成功率" :value="statistics.success_rate" suffix="%"/>
-      </el-col>
-      <el-col :span="6">
-        <el-statistic title="总设备数" :value="statistics.total || resultList.length"/>
-      </el-col>
-    </el-row>
-  </el-card> -->
-    
-    <!-- 结果表格：完全匹配models.py字段结构 -->
+    <!-- 结果表格 -->
     <el-table 
       :data="pagedResultList" 
       height="850" 
@@ -72,14 +55,17 @@
       border
       stripe
     >
-      <el-table-column prop="position" label="桩号" width="120" fixed show-overflow-tooltip/>
-      <el-table-column prop="devicename" label="设备名称" min-width="100" show-overflow-tooltip/>
-      <el-table-column prop="deviceip" label="设备IP" width="140"/>
+      <el-table-column prop="position" label="桩号/位置" width="150" fixed show-overflow-tooltip/>
+      <el-table-column prop="devicename" label="设备名称" min-width="80" show-overflow-tooltip/>
+      <el-table-column prop="deviceip" label="设备IP" width="150"/>
+      
+      <!-- ✅ 设备类型列（已修复） -->
       <el-table-column label="设备类型" width="150">
         <template #default="{ row }">
           <span>{{ getDeviceTypeName(row.devicetype) }}</span>
         </template>
       </el-table-column>
+      
       <el-table-column label="检查结果" width="120" fixed="right">
         <template #default="{ row }">
           <el-tag :type="row.inspectresult === 'online' ? 'success' : 'danger'">
@@ -87,13 +73,13 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="inspector" label="检查人员" width="90"/>
-      <el-table-column label="检查时间" width="160">
+      <el-table-column prop="inspector" label="检查人员" width="140"/>
+      <el-table-column label="检查时间" width="200">
         <template #default="{ row }">
           {{ row.inspecttime ? formatDateTime(row.inspecttime) : '-' }}
         </template>
       </el-table-column>
-      <el-table-column label="响应时间(ms)" width="120">
+      <el-table-column label="响应时间(ms)" width="180">
         <template #default="{ row }">
           <span v-if="row.response_time !== null">{{ row.response_time }} ms</span>
           <span v-else>-</span>
@@ -101,11 +87,12 @@
       </el-table-column>
       <el-table-column prop="error_desc" label="故障描述" min-width="120" show-overflow-tooltip/>
       <el-table-column prop="error_proc" label="故障处理" min-width="120" show-overflow-tooltip/>
-      <!-- <el-table-column prop="task_id" label="任务ID" width="180" show-overflow-tooltip/> -->
     </el-table>   
+    
     <!-- 分页组件 -->
     <div class="pagination-container" v-if="resultList.length > 0" style="margin-top: 20px;">
       <el-pagination
+        :key="paginationKey"  
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :total="totalRecords"
@@ -120,6 +107,7 @@
         {{ totalRecords }} 条
       </el-tag>
     </div>
+    
     <!-- 空状态 -->
     <el-empty 
       v-if="!taskRunning && resultList.length === 0" 
@@ -138,9 +126,10 @@
     />
   </div>
 </template>
+
 <script setup>
 // ==================== 导入 ====================
-import { ref, onUnmounted, computed, onMounted } from 'vue'
+import { ref, onUnmounted, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import pingdevicesHttp from '@/api/pingdevicesHttp'
 import { ElMessage } from 'element-plus'
@@ -156,34 +145,65 @@ const errorMsg = ref('')
 const pollInterval = ref(null)
 const searchKeyword = ref('')
 
+// ✅ 新增：设备类型映射表（键：ID，值：名称）
+const deviceTypeMap = ref({})
+// 添加检查结果状态映射
+const STATUS_MAP = { '在线': 'online', '离线': 'offline', '检查失败': 'error' }
+
 // ✅ 分页状态
 const currentPage = ref(1)
 const pageSize = ref(15)
+const paginationKey = ref(Date.now())  // ✅ 分页组件刷新key
 
 // ✅ 任务完成标志
 let taskCompleted = false
 
-// ✅ 关键新增：设备信息缓存（IP为键）
-const deviceMap = ref({})
+// ✅ 关键：普通对象存储设备缓存（避免响应式性能问题）
+let deviceMap = {}
 
 // ==================== 计算属性 ====================
 const currentInspector = computed(() => {
   return authStore.user?.realname || 'system'
 })
 
-const totalRecords = computed(() => resultList.value.length)
-
+// 过滤后的数据列表
 const filteredResultList = computed(() => {
   if (!searchKeyword.value.trim()) {
+    console.log('📝 无搜索关键词，返回全部数据')
     return resultList.value
   }
   
   const keyword = searchKeyword.value.toLowerCase()
-  return resultList.value.filter(item => 
-    item.position?.toLowerCase().includes(keyword) ||
-    item.devicename?.toLowerCase().includes(keyword) ||
-    item.deviceip?.toLowerCase().includes(keyword)
-  )
+  const reverseStatusMap = {
+    'online': '在线',
+    'offline': '离线',
+    'error': '检查失败'
+  }
+  
+  const filtered = resultList.value.filter(item => {
+    const chineseStatus = reverseStatusMap[item.inspectresult] || ''
+    
+    const match = item.position?.toLowerCase().includes(keyword) ||
+                  item.devicename?.toLowerCase().includes(keyword) ||
+                  item.deviceip?.toLowerCase().includes(keyword) ||
+                  chineseStatus.toLowerCase().includes(keyword)
+    
+    return match
+  })
+  
+  console.log(`📊 过滤结果: ${resultList.value.length} -> ${filtered.length} 条`)
+  return filtered
+})
+
+// ✅ 关键修复：分页总记录数必须基于过滤后的数据
+const totalRecords = computed(() => {
+  const count = filteredResultList.value.length
+  console.log('📊 分页统计更新:', {
+    原始记录数: resultList.value.length,
+    过滤后记录数: count,
+    当前关键词: searchKeyword.value
+  })
+  return count
 })
 
 const pagedResultList = computed(() => {
@@ -198,8 +218,12 @@ const MAX_DURATION_MS = 60000
 
 // ==================== 生命周期 ====================
 onMounted(() => {
-  console.log('🚀 组件挂载，自动加载历史数据...')
-  loadHistoricalResults()
+  console.log('🚀 组件挂载，自动加载数据...')
+  // ✅ 同时加载设备类型和历史数据
+  Promise.all([
+    loadDeviceTypes(),
+    loadHistoricalResults()
+  ])
 })
 
 onUnmounted(() => {
@@ -221,11 +245,22 @@ function formatDateTime(dateStr) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
+// ✅ 修改后的函数：支持动态映射和多种格式
 function getDeviceTypeName(devicetype) {
   if (!devicetype) return '未知'
+  
+  // 1. 如果是对象格式（来自原始设备列表）
   if (typeof devicetype === 'object') {
     return devicetype.devicetypename || devicetype.name || '未知'
   }
+  
+  // 2. 如果是数字或字符串ID（来自缓存或数据库）
+  const id = parseInt(devicetype, 10)
+  if (!isNaN(id)) {
+    return deviceTypeMap.value[id] || `未知类型(${id})`
+  }
+  
+  // 3. 其他情况
   return String(devicetype)
 }
 
@@ -253,32 +288,32 @@ function normalizeDeviceType(devicetype) {
   return isNaN(id) ? null : id
 }
 
-// ✅ 最终版：扩展字段兼容性
+// ✅ 最终版：缓存优先 + 设备类型标准化
 function normalizeResultItem(item, taskId, status, errorDesc = '') {
   if (!item.deviceip) {
     console.error('❌ 无效的设备数据，缺少deviceip:', item)
     return null
   }
 
-  const cachedDevice = deviceMap.value[item.deviceip] || {}
+  // 查找缓存（普通对象）
+  const cachedDevice = deviceMap[item.deviceip?.trim()] || {}
   
-  // ✅ 关键：扩展设备名称字段兼容性
-  const devicename = item.devicename || 
+  // 缓存优先于 item 数据
+  const devicename = cachedDevice.devicename || 
+                     item.devicename || 
                      item.name || 
                      item.device_name || 
-                     cachedDevice.devicename || 
-                     cachedDevice.name || 
                      '未知设备'
-
-  // ✅ 调试日志
-  console.log(`📌 IP: ${item.deviceip}, 名称源: devicename=${item.devicename}, name=${item.name}, 缓存=${cachedDevice.devicename}, 最终结果=${devicename}`)
+  
+  const position = cachedDevice.position || item.position || '未知桩号'
+  const devicetype = cachedDevice.devicetype || item.devicetype
 
   return {
     id: item.id || null,
     deviceip: item.deviceip,
-    position: item.position || cachedDevice.position || '未知桩号',
-    devicename: devicename, // ✅ 使用扩展后的字段
-    devicetype: normalizeDeviceType(item.devicetype || cachedDevice.devicetype),
+    position: position,
+    devicename: devicename,
+    devicetype: normalizeDeviceType(devicetype),
     inspectresult: status,
     inspector: currentInspector.value,
     inspecttime: getMySQLDateTime(),
@@ -293,6 +328,7 @@ function normalizeResultItem(item, taskId, status, errorDesc = '') {
 function handlePageSizeChange(newSize) {
   pageSize.value = newSize
   currentPage.value = 1
+  paginationKey.value = Date.now()  // ✅ 强制刷新分页组件
 }
 
 function handlePageChange(newPage) {
@@ -301,14 +337,40 @@ function handlePageChange(newPage) {
 
 function handleSearch() {
   currentPage.value = 1
+  paginationKey.value = Date.now()  // ✅ 强制刷新分页组件
+  console.log('🔍 执行搜索，重置到第1页')
 }
 
 function handleSearchClear() {
   searchKeyword.value = ''
+  currentPage.value = 1
+  paginationKey.value = Date.now()  // ✅ 强制刷新分页组件
   loadHistoricalResults()
 }
 
 // ==================== 数据加载 ====================
+// ✅ 加载设备类型列表
+async function loadDeviceTypes() {
+  try {
+    const response = await pingdevicesHttp.getDeviceTypes()
+    
+    if (Array.isArray(response) && response.length > 0) {
+      const map = {}
+      response.forEach((type) => {
+        if (type.id) {
+          map[type.id] = type.devicetypename || type.name || `类型${type.id}`
+        }
+      })
+      deviceTypeMap.value = map
+      console.log('📦 设备类型映射:', map)
+    } else {
+      console.error('❌ 响应数据格式错误')
+    }
+  } catch (error) {
+    console.error('❌ 加载设备类型失败:', error)
+  }
+}
+
 async function loadHistoricalResults() {
   if (loadingHistory.value) return
   
@@ -317,6 +379,7 @@ async function loadHistoricalResults() {
   errorMsg.value = ''
   resultList.value = []
   statistics.value = null
+  currentPage.value = 1  // ✅ 加载新数据时重置页码
 
   try {
     console.log('📡 加载历史检查数据...')
@@ -328,11 +391,8 @@ async function loadHistoricalResults() {
       statistics.value = calculateStatistics(validResults)
       
       const msg = `已加载 ${validResults.length} 条历史记录`
-      if (response.warning) {
-        ElMessage.warning(`${msg} - ${response.warning}`)
-      } else {
-        ElMessage.success(msg)
-      }
+      console.log('✅', msg)
+      ElMessage.success(msg)
     } else {
       resultList.value = []
       statistics.value = null
@@ -345,6 +405,7 @@ async function loadHistoricalResults() {
   } finally {
     loadingHistory.value = false
     taskCompleted = false
+    paginationKey.value = Date.now()  // ✅ 强制刷新分页组件
   }
 }
 
@@ -396,19 +457,21 @@ async function startBatchPing() {
       throw new Error('没有可用的设备数据')
     }
 
-    // ✅ 关键：构建设备信息缓存映射表
-    deviceMap.value = {}
+    // 构建普通对象缓存
+    deviceMap = {}
+    
     deviceData.items.forEach(device => {
-      if (device.deviceip) {
-        deviceMap.value[device.deviceip] = {
-          position: device.position,
-          devicename: device.devicename || device.name || device.device_name,
+      const ip = device.deviceip?.trim()
+      if (ip && !deviceMap[ip]) {
+        deviceMap[ip] = {
+          position: device.position?.trim() || '未知桩号',
+          devicename: device.devicename || device.name || device.device_name || '未知设备',
           devicetype: device.devicetype
         }
       }
     })
-    console.log('📦 设备缓存已构建，数量:', Object.keys(deviceMap.value).length)
-    console.log('📦 缓存样例:', deviceMap.value[deviceData.items[0].deviceip])
+    
+    console.log('📦 设备缓存已构建，数量:', Object.keys(deviceMap).length)
 
     const taskData = await pingdevicesHttp.startBatchPing(deviceData.items)
     if (!taskData?.task_id) {
@@ -456,11 +519,8 @@ async function queryProgressOnce(taskId) {
     if (!progressData) return false
 
     console.log('📊 进度数据状态:', progressData.state)
-    console.log('📊 进度数据统计:', progressData.statistics)
-
     if (progressData.statistics) statistics.value = progressData.statistics
     if (progressData.results) {
-      console.log('📊 结果样例:', JSON.stringify(progressData.results.success?.[0]))
       resultList.value = processResults(progressData.results, taskId)
       console.log('✅ 处理后数据样例:', JSON.stringify(resultList.value[0]))
     }
@@ -512,20 +572,13 @@ async function saveResultsToDatabase(taskId) {
     
     for (let i = 0; i < resultList.value.length; i += batchSize) {
       const batch = resultList.value.slice(i, i + batchSize)
-      console.log(`📦 发送批次 ${i/batchSize + 1}, 数量: ${batch.length}`)
       
-      try {
-        const result = await pingdevicesHttp.savePingResults({ 
-          results: batch, 
-          task_id: taskId 
-        })
-        
-        console.log(`✅ 批次结果:`, result)
-        totalSaved += result.saved_count || 0
-        
-      } catch (batchError) {
-        console.error(`❌ 批次失败:`, batchError.response?.data || batchError.message)
-      }
+      const result = await pingdevicesHttp.savePingResults({ 
+        results: batch, 
+        task_id: taskId 
+      })
+      
+      totalSaved += result.saved_count || 0
     }
     
     ElMessage.success(`检查结果已保存（共${totalSaved}条）`)
@@ -534,20 +587,28 @@ async function saveResultsToDatabase(taskId) {
     ElMessage.error('保存失败: ' + (error.response?.data?.error || error.message))
   }
 }
+
+// ✅ 监听搜索关键词变化
+watch(searchKeyword, (newVal) => {
+  console.log('🔍 搜索关键词变化:', newVal)
+  currentPage.value = 1
+  paginationKey.value = Date.now()  // ✅ 强制刷新分页组件
+})
+
 </script>
 
 <style scoped>
 .pagination-container {
   display: flex;
-  justify-content: flex-start;  /* 从 flex-end 改为 flex-start */
+  justify-content: flex-start;
   margin-top: 20px;
 }
-/* ✅ 自定义标签样式 */
+
 .page-stats-tag {
   font-size: 16px;
   height: auto;
   line-height: 1.5;
   padding: 8px 15px;
-  margin-left: 10px;  /* ✅ 距离分页控件10px */
+  margin-left: 10px;
 }
 </style>
