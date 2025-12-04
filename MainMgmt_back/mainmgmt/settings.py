@@ -1,4 +1,5 @@
-import ast
+import pymysql
+pymysql.install_as_MySQLdb()
 import os
 import environ
 from pathlib import Path
@@ -87,8 +88,8 @@ DATABASES = {
         'CONN_MAX_AGE': 60,  # ✅ 建议改为60秒，平衡性能与连接数
 
         'OPTIONS': {
-            # MySQL 8.0 推荐SQL模式
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'; SET time_zone = '+08:00'",
+            # 移除 SET time_zone，保留兼容 MariaDB 5.5 的 sql_mode
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
             # 'init_command': "SET time_zone = '+08:00'",  # 可选：设置MySQL会话时区
 
             # 字符集（确保表也使用utf8mb4）
