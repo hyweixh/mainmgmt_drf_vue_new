@@ -54,19 +54,19 @@ MIDDLEWARE = [
     'auth.sysuser.middlewares.LogClientIPMiddleware',  # 自定义日志中间件
 ]
 # CORS配置
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # ✅ Vite前端地址
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",  # ✅ Vite前端地址
+# ]
 
 # JWT认证
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # ✅ 确保用户已登录
-    ],
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     ],
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',  # ✅ 确保用户已登录
+#     ],
+# }
 # 3. ✅ 核心修复：暴露 Content-Disposition 头
 CORS_EXPOSE_HEADERS = [
     'Content-Disposition',
@@ -191,7 +191,7 @@ TEMPLATES = [{
 }]
 # 允许前端地址访问
 CORS_ALLOWED_ORIGINS = [
-    'http://192.168.3.115:5173',
+    'http://192.168.15.100:5173',
     'http://localhost:5173',
 ]
 # 全局缓存配置
