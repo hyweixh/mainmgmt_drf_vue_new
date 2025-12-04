@@ -1,0 +1,8 @@
+1.Python 3.12.4
+2.python -m django --version 5.0.3
+3.(mainmgmt_vue_new) D:\Python\django5\mainmgmt_drf_vue_new\MainMgmt_back>celery --version
+    5.4.0 (opalescent)
+4.C:\Users\weixh>redis-server --version
+    Redis server v=5.0.14.1 sha=ec77f72d:0 malloc=jemalloc-5.2.1-redis bits=64 build=5627b8177c9289c
+5.vue: 3.4.29
+6.node: v21.7.1

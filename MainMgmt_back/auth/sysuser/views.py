@@ -14,7 +14,7 @@ from auth.rbac.permissions.rbac_permission import CustomPermissionMixin
 from .auth import *
 from .serializers import *
 from utils.page import Pagination
-
+from rest_framework.permissions import AllowAny
 
 class LoginView(APIView):
     """
@@ -22,6 +22,7 @@ class LoginView(APIView):
     处理用户登录请求，验证身份后返回 JWT token、用户信息、角色菜单及权限列表
     支持验证码验证（如配置启用）
     """
+    permission_classes = [AllowAny]  # ✅ 必须添加这行！
 
     def get_all_menus_for_roles(self, role_ids):
         """
