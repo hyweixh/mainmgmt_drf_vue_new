@@ -13,7 +13,7 @@ const changePassword = (data) => {
   // data 里可能带：
   // { old_password: 'xxx', new_password: 'yyy' }               // 自己改
   // { user_id: 18, new_password: 'yyy' }                       // 管理员重置
-  console.log('[API-----] changePassword called with', data)
+  // console.log('[API-----] changePassword called with', data)
   const path = '/api/auth/change_password';
   return http.post(path, data);
 };

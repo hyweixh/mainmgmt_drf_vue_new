@@ -3,7 +3,12 @@ import { useAuthStore } from '@/stores/auth';
 import frame_routes from '@/router/frame';
 import login_routes from '@/router/login';
 
-const routes = [...frame_routes, ...login_routes];
+// ✅ 添加根路径重定向
+const routes = [
+  { path: '/', redirect: '/login' },  // 关键修改
+  ...frame_routes, 
+  ...login_routes
+];
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
