@@ -1,0 +1,5 @@
+# ========== 第一步：预览要删除的文件（必做！确认无误再删） ==========
+find ./apps ./auth -path "*/migrations/*_initial.py" -type f
+
+# ========== 第二步：确认后执行删除 ==========
+find ./apps ./auth -path "*/migrations/*_initial.py" -type f -delete

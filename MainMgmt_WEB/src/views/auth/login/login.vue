@@ -25,7 +25,7 @@
 
 <script setup>
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage} from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import authHttp from '@/api/authHttp'
@@ -40,25 +40,21 @@ const loginLoading = ref(false)
 
 // 登录按钮点击事件
 const onSubmit = async () => {
-  // 表单验证
   if (!form.username) return ElMessage.error('请输入用户名')
   if (!form.password) return ElMessage.error('请输入密码')
 
   loginLoading.value = true
   try {
-    // 直接调用登录接口（无需滑块验证）
     const data = await authHttp.login(form.username, form.password)
     const { token, user, menus, permissions } = data
-    // ✅ 打印菜单和权限
-    console.log('当前menus:', menus || '无menus');
-    console.log('当前permissions:', permissions || '无permissions');
-    // 存储用户信息和权限
+    
     authStore.setUserToken(user, token, menus, permissions)
     ElMessage.success('登录成功')
-    // 跳转到首页
     router.push({ name: 'home' })
   } catch (e) {
-    ElMessage.error(e.message || '登录失败，请重试')
+    // ✅ 简洁稳定的错误处理
+    const errorMsg = e?.response?.data?.message || e?.message || '登录失败，请重试'
+    ElMessage.error(errorMsg)
   } finally {
     loginLoading.value = false
   }
