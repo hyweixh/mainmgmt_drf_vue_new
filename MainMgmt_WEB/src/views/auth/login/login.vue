@@ -4,20 +4,54 @@
     <div class="wow-bg-cc">
       <h3 class="colorboard">维护管理</h3>
       <p class="text-muted">登录您的帐户</p>
-      <el-form :model="form" status-icon @submit.prevent>
-        <el-form-item :rules="[{ required: true, message: '请输入用户名', trigger: 'blur' }]" class="loginInput">
-          <el-input v-model="form.username" prefix-icon="User" size="large" placeholder="Username" />
-        </el-form-item>
-        <el-form-item :rules="[{ required: true, message: '请输入密码', trigger: 'blur' }]" class="loginInput">
-          <el-input v-model="form.password" prefix-icon="Lock" size="large" type="password" placeholder="Password"
-            show-password />
-        </el-form-item>
-        <el-form-item>
-          <el-button color="#1C1F2F" round size="large" class="loginButton" :loading="loginLoading" 
-            @click="onSubmit" @keydown.enter="keyDown()">
-            {{ loginLoading ? '登录中...' : '登录' }}
-          </el-button>
-        </el-form-item>
+      <!-- @submit.prevent="onSubmit"   ✅ 阻止表单默认提交 -->
+      <el-form
+        :model="form"
+        status-icon
+        @submit.prevent="onSubmit"  
+      >
+      <!-- 用户名输入 -->
+      <el-form-item
+        :rules="[{ required: true, message: '请输入用户名', trigger: 'blur' }]"
+        class="loginInput"
+      >
+      <el-input
+        v-model="form.username"
+        prefix-icon="User"
+        size="large"
+        placeholder="Username"
+      />
+      </el-form-item>
+
+      <!-- 密码输入 -->
+      <el-form-item
+        :rules="[{ required: true, message: '请输入密码', trigger: 'blur' }]"
+        class="loginInput"
+      >
+        <el-input
+          v-model="form.password"
+          prefix-icon="Lock"
+          size="large"
+          type="password"
+          placeholder="Password"
+          show-password
+        />
+  </el-form-item>
+
+  <!-- 登录按钮：点击或按 Enter 都走 onSubmit -->
+  <!-- native-type="submit"   ✅ 让按钮触发表单提交 -->
+  <el-form-item>
+    <el-button
+      color="#1C1F2F"
+      round
+      size="large"
+      class="loginButton"
+      :loading="loginLoading"
+      native-type="submit"
+    >
+      {{ loginLoading ? '登录中...' : '登录' }}
+    </el-button>
+  </el-form-item>
       </el-form>
     </div>
   </div>

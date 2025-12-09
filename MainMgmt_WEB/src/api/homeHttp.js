@@ -25,7 +25,7 @@ const updateLayout = (id,data) => {
 }
 
 export default{
-     alarmToday,
+    alarmToday,
     celeryToday,
     getLayout,
     updateLayout
